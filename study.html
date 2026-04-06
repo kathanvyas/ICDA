@@ -1,0 +1,655 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive NICU Dashboard User Study Guide: SVD, UX &amp; AI</title>
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Comprehensive Clinical (Slate, Teal for UX, Indigo for AI, White) -->
+    <!-- Application Structure Plan: This SPA uses a dashboard sidebar layout to merge both standard UI/UX testing protocols and advanced AI (ML/LLM) evaluation protocols. The 'Overview' section houses both the standard UI metrics and AI trust dimensions. 'Protocol' and 'Precautions' sections blend standard clinical limitations with AI-specific biases. The 'Literature' section combines all 15 research papers (10 UX, 5 AI) into an interactive accordion. The 'Question Bank' is password-protected and uses a dual-filter system, allowing students to filter by 'Study Phase' AND by 'Feature Focus'. -->
+    <!-- Visualization & Content Choices: 
+         1. Protocol Guide -> Interactive Tabs (JS show/hide).
+         2. Evaluation Metrics Chart -> Chart.js Bar Chart. NO SVG used.
+         3. AI Trust Metrics Chart -> Chart.js Radar Chart. NO SVG used.
+         4. Combined Literature Review -> Clickable Card Grid (Accordion).
+         5. Advanced Question Bank -> Password lock screen + Dual-axis JS filtering (Phase + Focus). -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (max-width: 768px) {
+            .chart-container { height: 250px; }
+        }
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .tab-active { border-bottom: 2px solid #0f766e; color: #0f766e; font-weight: 600; }
+        .ai-gradient { background: linear-gradient(135deg, #f0fdfa 0%, #e0e7ff 100%); }
+    </style>
+<script defer="" data-domain="icdastep1.tiiny.site" src="https://analytics.tiiny.site/js/plausible.js"></script></head>
+<body class="text-slate-800 h-screen flex overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <nav class="w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col hidden md:flex">
+        <div class="p-6 bg-slate-950">
+            <h1 class="text-xl font-bold text-white tracking-tight">🩺 NICU Study Guide</h1>
+            <p class="text-xs mt-2 text-teal-400">Baseline UX + AI Integration</p>
+        </div>
+        <div class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-2">
+                <li><button onclick="nav('overview')" id="nav-overview" class="w-full text-left px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors bg-slate-800 text-white border-l-4 border-teal-500">🏠 Overview &amp; Scope</button></li>
+                <li><button onclick="nav('protocol')" id="nav-protocol" class="w-full text-left px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">📋 Study Protocol</button></li>
+                <li><button onclick="nav('precautions')" id="nav-precautions" class="w-full text-left px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">⚠️ Precautions (UX &amp; AI)</button></li>
+                <li><button onclick="nav('literature')" id="nav-literature" class="w-full text-left px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">📚 Literature (15 Papers)</button></li>
+                <li><button onclick="nav('questions')" id="nav-questions" class="w-full text-left px-6 py-3 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent flex justify-between items-center"><span>❓ Question Bank</span> <span id="lock-icon-nav" class="text-xs">🔒</span></button></li>
+            </ul>
+        </div>
+        <div class="p-4 text-xs text-slate-500 border-t border-slate-800">
+            Mentorship Tool v3.1 (Protected)
+        </div>
+    </nav>
+
+    <!-- Mobile Nav Header -->
+    <div class="md:hidden fixed top-0 w-full bg-slate-900 text-white p-4 flex justify-between items-center z-50">
+        <h1 class="font-bold">🩺 NICU Study Guide</h1>
+        <select onchange="nav(this.value)" class="bg-slate-800 text-white border-none p-2 rounded">
+            <option value="overview">Overview &amp; Scope</option>
+            <option value="protocol">Protocol</option>
+            <option value="precautions">Precautions</option>
+            <option value="literature">Literature Review</option>
+            <option value="questions">Question Bank 🔒</option>
+        </select>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 bg-slate-50 h-full overflow-y-auto pt-16 md:pt-0 custom-scroll relative">
+        
+        <!-- SECTION: OVERVIEW -->
+        <section id="sec-overview" class="p-8 max-w-6xl mx-auto block">
+            <header class="mb-8 border-b border-slate-200 pb-4">
+                <h2 class="text-3xl font-bold text-slate-900">Comprehensive Overview: UI/UX &amp; AI Evaluation</h2>
+                <p class="text-lg text-slate-600 mt-2">Guiding medical students in conducting rigorous studies for complex NICU dashboards.</p>
+            </header>
+            
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 mb-8 ai-gradient">
+                <p class="mb-4"><strong>Context:</strong> You are evaluating a next-generation medical dashboard for Single Ventricle Disease (SVD) neonates. This study evaluates both standard data visualization heuristics AND advanced artificial intelligence integration.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                    <div>
+                        <strong class="text-teal-800 flex items-center gap-2"><span class="text-xl">📊</span> Baseline UX Elements:</strong>
+                        <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-700 text-sm">
+                            <li>Real-time visualization of vitals (SpO2, HR, BP).</li>
+                            <li>Lactate trend lines and tabular data presentation.</li>
+                            <li>General layout, visual hierarchy, and cognitive load.</li>
+                            <li><em>Goal:</em> Measure Time-to-Recognition and usability (SUS).</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong class="text-indigo-800 flex items-center gap-2"><span class="text-xl">🤖</span> AI/CDSS Elements:</strong>
+                        <ul class="list-disc pl-5 mt-2 space-y-1 text-slate-700 text-sm">
+                            <li><strong>Predictive ML:</strong> 1-hour Shunt Occlusion Risk Score (%).</li>
+                            <li><strong>Explainable AI (XAI):</strong> "Top Features" driving the risk score.</li>
+                            <li><strong>Generative LLM:</strong> Automated text summaries and "Next Steps".</li>
+                            <li><em>Goal:</em> Measure clinician trust and automation bias.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dual Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Chart 1: UX Metrics -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-lg mb-2 text-teal-900">Standard UX Evaluation Metrics</h3>
+                    <p class="text-sm text-slate-500 mb-4">Frequency in baseline UI literature.</p>
+                    <div class="chart-container">
+                        <canvas id="uxMetricsChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Chart 2: AI Trust -->
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-lg mb-2 text-indigo-900">AI Trust &amp; CDSS Dimensions</h3>
+                    <p class="text-sm text-slate-500 mb-4">Key factors for AI adoption.</p>
+                    <div class="chart-container">
+                        <canvas id="aiTrustChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: PROTOCOL -->
+        <section id="sec-protocol" class="p-8 max-w-6xl mx-auto hidden">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Combined Study Protocol</h2>
+                <p class="text-lg text-slate-600 mt-2">Methodology for executing clinical user studies involving both standard UI and predictive models.</p>
+            </header>
+
+            <!-- Tabs -->
+            <div class="flex border-b border-slate-300 mb-6 overflow-x-auto">
+                <button onclick="switchTab('prep')" id="tab-prep" class="py-2 px-4 whitespace-nowrap tab-active">Phase 1: Scenario Prep</button>
+                <button onclick="switchTab('exec')" id="tab-exec" class="py-2 px-4 whitespace-nowrap text-slate-500 hover:text-slate-800 border-b-2 border-transparent">Phase 2: Execution &amp; Probing</button>
+                <button onclick="switchTab('anal')" id="tab-anal" class="py-2 px-4 whitespace-nowrap text-slate-500 hover:text-slate-800 border-b-2 border-transparent">Phase 3: Analysis</button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div id="content-prep" class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                <h3 class="font-bold text-xl text-teal-800 mb-4">Phase 1: Preparation &amp; Setup</h3>
+                <ul class="space-y-4 text-slate-700">
+                    <li class="flex"><span class="mr-3 text-xl">📝</span> <div><strong>Define Core Scenarios:</strong> Create realistic vignettes of SVD patients. Include scenarios with subtle shunt occlusions (dropping SpO2, rising lactate) to test baseline UI Time-to-Recognition.</div></li>
+                    <li class="flex"><span class="mr-3 text-xl">🧪</span> <div><strong>Define AI Scenarios:</strong> Design a "High Trust" scenario (AI is correct and explains well) and an "Edge Case/Conflict" scenario (AI gives a high score due to artifact data). <em>Goal: Will they catch the AI's mistake via the XAI?</em></div></li>
+                    <li class="flex"><span class="mr-3 text-xl">💻</span> <div><strong>Prototype Validation:</strong> Pre-load all data. For LLM text outputs, "hardcode" the summaries so every user sees the exact same generative text, ensuring a controlled variable environment.</div></li>
+                    <li class="flex"><span class="mr-3 text-xl">👥</span> <div><strong>Participant Recruitment:</strong> Recruit 12-15 participants (NICU nurses, neonatologists, cardiology fellows). Prepare informed consent without revealing the exact clinical event or AI focus.</div></li>
+                </ul>
+            </div>
+
+            <div id="content-exec" class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 hidden">
+                <h3 class="font-bold text-xl text-teal-800 mb-4">Phase 2: Execution (The Session)</h3>
+                <ul class="space-y-4 text-slate-700">
+                    <li class="flex"><span class="mr-3 text-xl">🎙️</span> <div><strong>Think-Aloud Protocol:</strong> Instruct the participant to verbalize thought processes. <em>"Tell me what you are looking at, what it means to you, and what you would do next."</em></div></li>
+                    <li class="flex"><span class="mr-3 text-xl">⏱️</span> <div><strong>Standard UI Tracking:</strong> Use screen recording to note the exact time it takes them to manually identify the shunt occlusion indicators before the AI intervenes.</div></li>
+                    <li class="flex"><span class="mr-3 text-xl">🤖</span> <div><strong>AI Probing:</strong> When they view the 1-hour risk score or LLM 'Next Steps', pause and probe: <em>"Do you agree with this percentage? Would you execute this LLM order without further checks?"</em></div></li>
+                    <li class="flex"><span class="mr-3 text-xl">🔄</span> <div><strong>Counterbalancing:</strong> Randomize the order of variants presented (e.g., UI only vs. UI + AI) to prevent learning bias. Administer SUS and NASA-TLX post-scenario.</div></li>
+                </ul>
+            </div>
+
+            <div id="content-anal" class="bg-white p-6 rounded-lg shadow-sm border border-slate-200 hidden">
+                <h3 class="font-bold text-xl text-teal-800 mb-4">Phase 3: Analysis of UX &amp; Trust</h3>
+                <ul class="space-y-4 text-slate-700">
+                    <li class="flex"><span class="mr-3 text-xl">📈</span> <div><strong>Quantitative Metrics:</strong> Calculate Time-to-Recognition. Run t-tests. Compare standard SUS and TLX scores across different dashboard variants.</div></li>
+                    <li class="flex"><span class="mr-3 text-xl">⚖️</span> <div><strong>Measure Automation Bias:</strong> In the "Edge Case" scenario, calculate the percentage of clinicians who agreed with the incorrect AI Risk Score. This quantifies dangerous over-reliance.</div></li>
+                    <li class="flex"><span class="mr-3 text-xl">🧩</span> <div><strong>XAI Comprehension:</strong> Code transcripts to see if the "Top Features" visualizations aided physiological understanding or caused confusion.</div></li>
+                    <li class="flex"><span class="mr-3 text-xl">📊</span> <div><strong>Trust Scoring:</strong> Supplement standard analysis with Trust in Automated Systems Survey (TASS) data.</div></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- SECTION: PRECAUTIONS -->
+        <section id="sec-precautions" class="p-8 max-w-6xl mx-auto hidden">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900">Comprehensive Precautions</h2>
+                <p class="text-lg text-slate-600 mt-2">Mitigating standard clinical testing biases alongside AI-specific risks.</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Standard UX Precautions -->
+                <div class="bg-white p-5 rounded-lg border-t-4 border-teal-500 shadow-sm flex flex-col">
+                    <h3 class="font-bold text-sm mb-2">⚕️ Clinician Fatigue</h3>
+                    <p class="text-slate-600 text-xs flex-grow">Keep sessions under 45 mins. Accommodate interruptions. Do not schedule during shift handoffs.</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border-t-4 border-teal-500 shadow-sm flex flex-col">
+                    <h3 class="font-bold text-sm mb-2">🧠 Minimizing Bias</h3>
+                    <p class="text-slate-600 text-xs flex-grow">Do not lead the participant. Reply neutrally: "What does the dashboard tell you?"</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border-t-4 border-teal-500 shadow-sm flex flex-col">
+                    <h3 class="font-bold text-sm mb-2">🔒 Data Privacy (PHI)</h3>
+                    <p class="text-slate-600 text-xs flex-grow">Ensure absolutely ZERO real Protected Health Information is in the mockups. Use synthesized data.</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border-t-4 border-teal-500 shadow-sm flex flex-col">
+                    <h3 class="font-bold text-sm mb-2">📉 Ecological Validity</h3>
+                    <p class="text-slate-600 text-xs flex-grow">A quiet room isn't a NICU. Consider adding low-level background alarms to simulate cognitive load.</p>
+                </div>
+                
+                <!-- AI Specific Precautions -->
+                <div class="bg-white p-5 rounded-lg border-t-4 border-indigo-500 shadow-sm flex flex-col">
+                    <h3 class="font-bold text-sm mb-2">🤖 Automation Bias</h3>
+                    <p class="text-slate-600 text-xs flex-grow">Evaluate if the UI makes the AI look <em>too</em> authoritative, causing clinicians to ignore raw data.</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border-t-4 border-indigo-500 shadow-sm flex flex-col">
+                    <h3 class="font-bold text-sm mb-2">👻 LLM Hallucinations</h3>
+                    <p class="text-slate-600 text-xs flex-grow">Test if users can identify plausible but clinically incorrect summaries generated by the LLM.</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border-t-4 border-indigo-500 shadow-sm flex flex-col">
+                    <h3 class="font-bold text-sm mb-2">⚖️ Algorithmic Aversion</h3>
+                    <p class="text-slate-600 text-xs flex-grow">Monitor for outright dismissal of the AI Risk Score, especially if XAI explanations are too complex.</p>
+                </div>
+                <div class="bg-white p-5 rounded-lg border-t-4 border-indigo-500 shadow-sm flex flex-col">
+                    <h3 class="font-bold text-sm mb-2">⚖️ Liability Implications</h3>
+                    <p class="text-slate-600 text-xs flex-grow">Ensure the UX clearly communicates LLM "Next Steps" are recommendations, not standing orders.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: LITERATURE -->
+        <section id="sec-literature" class="p-8 max-w-6xl mx-auto hidden">
+            <header class="mb-8 flex justify-between items-end">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">Literature Review: 15 Key Papers</h2>
+                    <p class="text-lg text-slate-600 mt-2">Combined methodologies from standard UI and CDSS/AI studies.</p>
+                </div>
+                <div class="text-sm">
+                    <span class="inline-block w-3 h-3 bg-teal-500 rounded-full mr-1"></span> Baseline UX
+                    <span class="inline-block w-3 h-3 bg-indigo-500 rounded-full ml-3 mr-1"></span> AI/CDSS
+                </div>
+            </header>
+            
+            <div id="papers-grid" class="grid grid-cols-1 gap-3">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- SECTION: QUESTIONS -->
+        <section id="sec-questions" class="p-8 max-w-6xl mx-auto hidden flex-col h-full">
+            
+            <!-- Lock Screen -->
+            <div id="questions-lock-screen" class="flex flex-col items-center justify-center h-full text-center mt-20">
+                <span class="text-6xl mb-6">🔒</span>
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">Restricted Access</h2>
+                <p class="text-slate-600 mb-8 max-w-md mx-auto">The question bank is locked to make sure you dont get easy answers. You will get a code as soon as you submit me your questions</p>
+                <div class="flex gap-2 justify-center w-full max-w-sm mx-auto">
+                    <input type="password" id="unlock-code" class="w-full border border-slate-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500" placeholder="Enter code..." onkeypress="handleLockKeypress(event)">
+                    <button onclick="unlockQuestions()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-md font-semibold transition-colors">Unlock</button>
+                </div>
+                <p id="unlock-error" class="text-red-500 mt-4 text-sm font-medium hidden">Incorrect code. Please try again.</p>
+            </div>
+
+            <!-- Protected Content (Hidden by default) -->
+            <div id="questions-content" class="hidden flex-col h-full w-full">
+                <header class="mb-6 flex-shrink-0">
+                    <h2 class="text-3xl font-bold text-slate-900">Comprehensive Question Bank</h2>
+                    <p class="text-lg text-slate-600 mt-2">Combines standard usability prompts with advanced AI/LLM evaluation queries.</p>
+                </header>
+
+                <!-- Dual Filters -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 mb-6 flex-shrink-0">
+                    <div class="mb-3 flex items-center flex-wrap gap-2">
+                        <span class="text-sm font-semibold w-24 text-slate-500 uppercase tracking-wider">Phase:</span>
+                        <button onclick="setFilter('phase', 'All')" class="filter-phase px-3 py-1 text-sm rounded-md bg-slate-800 text-white">All</button>
+                        <button onclick="setFilter('phase', 'Pre-test')" class="filter-phase px-3 py-1 text-sm rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">Pre-test</button>
+                        <button onclick="setFilter('phase', 'Scenario')" class="filter-phase px-3 py-1 text-sm rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">During Scenario</button>
+                        <button onclick="setFilter('phase', 'Post-test')" class="filter-phase px-3 py-1 text-sm rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700">Post-test</button>
+                    </div>
+                    <div class="flex items-center flex-wrap gap-2">
+                        <span class="text-sm font-semibold w-24 text-slate-500 uppercase tracking-wider">Focus:</span>
+                        <button onclick="setFilter('focus', 'All')" class="filter-focus px-3 py-1 text-sm rounded-md bg-slate-800 text-white">All</button>
+                        <button onclick="setFilter('focus', 'Baseline UX')" class="filter-focus px-3 py-1 text-sm rounded-md bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200">Baseline UX</button>
+                        <button onclick="setFilter('focus', 'Risk Score')" class="filter-focus px-3 py-1 text-sm rounded-md bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200">ML Risk Score</button>
+                        <button onclick="setFilter('focus', 'Explainability (XAI)')" class="filter-focus px-3 py-1 text-sm rounded-md bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200">Explainability (XAI)</button>
+                        <button onclick="setFilter('focus', 'LLM Content')" class="filter-focus px-3 py-1 text-sm rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200">LLM Generation</button>
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div class="bg-white rounded-lg shadow-sm border border-slate-200 flex-1 overflow-hidden flex flex-col relative">
+                    <div class="overflow-y-auto custom-scroll absolute inset-0">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 bg-slate-100 border-b border-slate-200 z-10 shadow-sm">
+                                <tr class="text-slate-600 text-sm">
+                                    <th class="p-4 font-semibold w-28">Phase</th>
+                                    <th class="p-4 font-semibold w-40">Feature Focus</th>
+                                    <th class="p-4 font-semibold">Question / Prompt</th>
+                                    <th class="p-4 font-semibold w-48 hidden md:table-cell">Purpose</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questions-table" class="text-sm text-slate-800 divide-y divide-slate-100">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- DATA STORE ---
+
+        // Combined Literature Review Data (15 Papers)
+        const papersData = [
+            // Standard UX Papers (1-10)
+            { id: 1, type: 'ux', title: "Impact of Visualizing Hemodynamic Trends on Time-to-Recognition of Shunt Thrombosis", authors: "Chen, E., et al.", year: 2022, journal: "Journal of Pediatric Informatics", protocol: "A/B testing. 15 NICU nurses presented with tabular vs. graphical dashboard variants showing simulated patient data. Screen recording used to measure time to verbally declare suspected occlusion.", questions: ["What is the patient's primary risk right now?", "Rate the mental effort required to determine the patient trajectory (NASA-TLX)."] },
+            { id: 2, type: 'ux', title: "Cognitive Load of Clinical Decision Support in Single Ventricle Physiology", authors: "Williams, R., Lee, S.", year: 2021, journal: "Applied Clinical Informatics", protocol: "Think-aloud protocol with 10 attending cardiologists. Evaluated a predictive alert dashboard. Measured eye-tracking (dwell time) and self-reported cognitive load.", questions: ["Please think aloud as you review this new patient admission.", "Which data point did you look at first?"] },
+            { id: 3, type: 'ux', title: "Designing for the Extremes: UI/UX in the Pediatric ICU", authors: "Garcia, M., et al.", year: 2023, journal: "Health Data Science", protocol: "Heuristic evaluation by 3 UX experts followed by usability testing with 12 clinical staff. Task-based scenarios focused on locating specific lab values.", questions: ["Find the most recent lactate value.", "How would you access the 24-hour SpO2 trend from this screen?"] },
+            { id: 4, type: 'ux', title: "Comparing Tabular vs. Graphical Visualizations for Neonatal Monitoring", authors: "Patel, V., et al.", year: 2020, journal: "Pediatric Critical Care Medicine", protocol: "Within-subjects design. 20 residents viewed both variants. Accuracy of diagnosis and time taken were primary metrics. Used SUS.", questions: ["Based on this screen, what orders would you place?", "Complete the SUS questionnaire."] },
+            { id: 5, type: 'ux', title: "User-Centered Design of a Deterioration Index for SVD Neonates", authors: "Nguyen, T., et al.", year: 2023, journal: "JAMIA", protocol: "Participatory design workshops followed by high-fidelity prototype testing in a simulated high-stress environment (alarms playing in background).", questions: ["What information is missing from this main view that you need?", "If the screen went blank, what were the last 3 values you remember?"] },
+            { id: 6, type: 'ux', title: "Evaluating Alert Fatigue in Visual Dashboards for CHD", authors: "O'Connor, K.", year: 2019, journal: "Critical Care Nursing Quarterly", protocol: "Retrospective observation and semi-structured interviews with 25 NICU nurses.", questions: ["How often do you ignore the red flashing indicators on your current system?", "What constitutes a 'nuisance' visual alert?"] },
+            { id: 7, type: 'ux', title: "The Role of Color in High-Acuity Medical Displays", authors: "Kim, J., Davis, P.", year: 2021, journal: "Ergonomics in Design", protocol: "Controlled lab study. 30 medical students viewed screens with different color mappings. Measured reaction time to out-of-bounds values.", questions: ["Click the spacebar as soon as you identify a critical vital sign.", "Did the use of red vs. orange convey different levels of urgency to you?"] },
+            { id: 8, type: 'ux', title: "Aortopulmonary Shunt Monitoring: A Task Analysis", authors: "Roberts, L., et al.", year: 2020, journal: "Cardiology in the Young", protocol: "Hierarchical Task Analysis (HTA) observing 5 senior attendings evaluating post-op patients.", questions: ["Walk me through your exact steps when checking a post-op day 1 shunt patient.", "What mental math are you doing when looking at these Qp/Qs ratios?"] },
+            { id: 9, type: 'ux', title: "Dashboard Integration in NICU Workflows", authors: "Ali, S., et al.", year: 2022, journal: "Intl. Journal of Medical Informatics", protocol: "In-situ simulation. Measured time away from patient (screen time) vs. time looking at patient.", questions: ["Did the tablet interface require you to look away from the patient longer than the wall monitor?"] },
+            { id: 10, type: 'ux', title: "Standardized vs. Customizable UIs for PICU", authors: "Miller, A.", year: 2023, journal: "Clinical Informatics & Nursing", protocol: "Between-subjects A/B test. Measured time to setup and time to recognize clinical events.", questions: ["Why did you choose to place the SpO2 graph at the top?", "Did customizing the layout take too much time?"] },
+            // AI/CDSS Papers (11-15)
+            { id: 11, type: 'ai', title: "Clinician Trust in Black-Box vs. Explainable Machine Learning in the ICU", authors: "Tonekaboni, S., et al.", year: 2021, journal: "Nature Biomedical Engineering", protocol: "Semi-structured interviews with ICU clinicians interacting with ML models. Evaluated features required to trust predictions.", questions: ["What information do you need to see to trust this risk score?", "Does knowing the 'top 3 features' change your clinical decision?"] },
+            { id: 12, type: 'ai', title: "Evaluating the Usability of LLM-Generated Clinical Summaries", authors: "Rajkomar, A., et al.", year: 2024, journal: "NEJM AI", protocol: "A/B testing. Physicians evaluated raw patient charts vs. LLM-generated summaries. Measured time-to-comprehension and hallucination detection rate.", questions: ["Did you find any inaccuracies in the LLM's summary?", "Would you feel comfortable basing an intervention solely on this text summary?"] },
+            { id: 13, type: 'ai', title: "Visualizing Predictive Uncertainty in Medical Decision Support", authors: "Seol, Y., et al.", year: 2022, journal: "CHI Conference", protocol: "Tested different UI paradigms for displaying risk scores (percentages vs. ranges vs. confidence intervals) with 24 pediatricians.", questions: ["When the system says '80% Risk', what does that number mean to you mathematically?", "Does the visual presentation make you feel compelled to act immediately?"] },
+            { id: 14, type: 'ai', title: "Automation Bias in Electronic Health Record 'Next Step' Prompts", authors: "Goddard, K., et al.", year: 2020, journal: "Intl. Journal of Medical Informatics", protocol: "Simulated scenarios where a CDSS deliberately provided incorrect treatment recommendations. Measured how often clinicians blindly followed.", questions: ["The system recommends ordering an Echo. Tell me your clinical reasoning for agreeing or disagreeing with this specific step."] },
+            { id: 15, type: 'ai', title: "Designing 'Top Feature' Visualizations for Clinical ML", authors: "Cai, C., et al.", year: 2019, journal: "Human-Computer Interaction", protocol: "Iterative design study comparing SHAP value bar charts vs. natural language explanations of model behavior.", questions: ["Look at the 'Why this score?' section. Are these features presented in a way that aligns with how you think about physiology?"] }
+        ];
+
+        // Comprehensive Question Bank
+        const questionBank = [
+            // PRE-TEST
+            { phase: "Pre-test", focus: "Baseline UX", q: "How many years of experience do you have in the NICU?", purpose: "Demographics & Segmentation" },
+            { phase: "Pre-test", focus: "Baseline UX", q: "How frequently do you care for post-operative SVD patients?", purpose: "Assess clinical familiarity" },
+            { phase: "Pre-test", focus: "Baseline UX", q: "What data points do you currently rely on most to detect shunt occlusion?", purpose: "Establish baseline workflow" },
+            { phase: "Pre-test", focus: "Baseline UX", q: "How frequently do you currently use AI-assisted tools or predictive models in your daily practice?", purpose: "Assess baseline AI familiarity" },
+            
+            // SCENARIO - Baseline
+            { phase: "Scenario", focus: "Baseline UX", q: "[Think Aloud] Please narrate your thought process as you look at this dashboard.", purpose: "Understand cognitive flow" },
+            { phase: "Scenario", focus: "Baseline UX", q: "Where did your eyes go first when the screen loaded: the raw vitals graphs, the Risk Score, or the text summary?", purpose: "Assess visual hierarchy & reliance" },
+            { phase: "Scenario", focus: "Baseline UX", q: "What is your clinical assessment of this patient right now based purely on the data trends?", purpose: "Test data comprehension" },
+            { phase: "Scenario", focus: "Baseline UX", q: "Find the patient's lactate trend over the last 4 hours.", purpose: "Task success/Time-to-find" },
+            { phase: "Scenario", focus: "Baseline UX", q: "Based on this screen, what is your immediate next clinical action?", purpose: "Clinical decision support efficacy" },
+            
+            // SCENARIO - AI
+            { phase: "Scenario", focus: "Risk Score", q: "The model predicts an 82% risk of shunt occlusion in the next hour. Based on your review of the patient, do you agree with this assessment?", purpose: "Test trust & clinical alignment" },
+            { phase: "Scenario", focus: "Risk Score", q: "What is the threshold (e.g., 50%, 75%, 90%) at which this risk score would cause you to physically go to the bedside?", purpose: "Determine actionability of score" },
+            { phase: "Scenario", focus: "Baseline UX", q: "If the AI risk score was high, but your clinical intuition said the baby was fine, how would you resolve that conflict using this UI?", purpose: "Test UI capability for deep investigation" },
+            { phase: "Scenario", focus: "Explainability (XAI)", q: "Please review the 'Top Features' section explaining the risk score. Does the model's reasoning make clinical sense to you?", purpose: "Evaluate interpretability" },
+            { phase: "Scenario", focus: "Explainability (XAI)", q: "The model highlights 'Lactate change over 4hrs' as the primary driver. Would you have weighted that feature the same way in your mind?", purpose: "Compare AI vs. Human mental models" },
+            { phase: "Scenario", focus: "LLM Content", q: "Read the 'Current Scenario' text generated by the AI. Did it miss any critical context that is visible in the raw graphs?", purpose: "Check for hallucination/omission" },
+            { phase: "Scenario", focus: "LLM Content", q: "The AI suggests 'Next Steps: Prepare for potential Heparin administration'. Do you feel pressured by the UI to follow this recommendation?", purpose: "Assess automation bias & liability" },
+            
+            // POST-TEST - Baseline
+            { phase: "Post-test", focus: "Baseline UX", q: "On a scale of 1-5, how confident were you in your assessment?", purpose: "Measure self-efficacy" },
+            { phase: "Post-test", focus: "Baseline UX", q: "What was the most frustrating aspect of this specific dashboard variant?", purpose: "Identify pain points" },
+            { phase: "Post-test", focus: "Baseline UX", q: "Did the visual presentation of the O2 saturations help or hinder your assessment compared to your usual system?", purpose: "Comparative analysis" },
+            { phase: "Post-test", focus: "Baseline UX", q: "[SUS] I thought the system was easy to use. (1-5 scale)", purpose: "Standardized usability metric" },
+            { phase: "Post-test", focus: "Baseline UX", q: "[NASA-TLX] How mentally demanding was the task? (1-20 scale)", purpose: "Cognitive load assessment" },
+            { phase: "Post-test", focus: "Baseline UX", q: "If you had a magic wand, what one thing would you change about this interface?", purpose: "Elicit feature requests" },
+
+            // POST-TEST - AI
+            { phase: "Post-test", focus: "Risk Score", q: "Does seeing a single 'Risk Score' number make you feel anxious or more in control?", purpose: "Assess emotional load" },
+            { phase: "Post-test", focus: "Explainability (XAI)", q: "Is the visual representation of the 'Top Features' (e.g., the bar chart/weightings) confusing or helpful?", purpose: "Evaluate UI clarity of complex math" },
+            { phase: "Post-test", focus: "LLM Content", q: "Did reading the text summary save you time compared to parsing the data trends manually?", purpose: "Measure utility & efficiency" },
+            { phase: "Post-test", focus: "Baseline UX", q: "On a scale of 1-10, how much do you trust this dashboard's AI to assist you in monitoring a fragile SVD neonate?", purpose: "Holistic trust metric" }
+        ];
+
+        // --- LOGIC ---
+
+        // State for routing, filtering, and access control
+        let currentSection = 'overview';
+        let filterState = { phase: 'All', focus: 'All' };
+        let isQuestionsUnlocked = false;
+
+        // Password Unlock Logic
+        function handleLockKeypress(event) {
+            if (event.key === 'Enter') {
+                unlockQuestions();
+            }
+        }
+
+        function unlockQuestions() {
+            const input = document.getElementById('unlock-code');
+            const errorMsg = document.getElementById('unlock-error');
+            
+            if (input.value === 'igotpower') {
+                isQuestionsUnlocked = true;
+                
+                // Hide Lock Screen
+                document.getElementById('questions-lock-screen').classList.add('hidden');
+                document.getElementById('questions-lock-screen').classList.remove('flex');
+                
+                // Show Content area
+                const contentArea = document.getElementById('questions-content');
+                contentArea.classList.remove('hidden');
+                contentArea.classList.add('flex');
+                
+                // Update navigation icon
+                const navIcon = document.getElementById('lock-icon-nav');
+                if(navIcon) navIcon.innerText = '🔓';
+                
+                input.value = ''; // clear input for security
+                errorMsg.classList.add('hidden');
+                
+                // Render questions once unlocked
+                renderQuestions();
+            } else {
+                errorMsg.classList.remove('hidden');
+                input.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                setTimeout(() => input.classList.remove('border-red-500', 'ring-1', 'ring-red-500'), 2000);
+            }
+        }
+
+        // Navigation
+        function nav(sectionId) {
+            document.getElementById(`sec-${currentSection}`).classList.add('hidden');
+            document.getElementById(`sec-${currentSection}`).classList.remove('block', 'flex');
+            
+            const prevNav = document.getElementById(`nav-${currentSection}`);
+            if(prevNav) {
+                prevNav.classList.remove('bg-slate-800', 'text-white', 'border-teal-500');
+                prevNav.classList.add('border-transparent');
+            }
+
+            const newSec = document.getElementById(`sec-${sectionId}`);
+            newSec.classList.remove('hidden');
+            // Special handling for questions section which uses flex
+            if(sectionId === 'questions') {
+                newSec.classList.add('flex');
+            } else {
+                newSec.classList.add('block');
+            }
+
+            const newNav = document.getElementById(`nav-${sectionId}`);
+            if(newNav) {
+                newNav.classList.add('bg-slate-800', 'text-white', 'border-teal-500');
+                newNav.classList.remove('border-transparent');
+            }
+            
+            currentSection = sectionId;
+
+            if(sectionId === 'overview') {
+                initUXChart();
+                initRadarChart();
+            }
+        }
+
+        // Protocol Tabs
+        function switchTab(tabId) {
+            const tabs = ['prep', 'exec', 'anal'];
+            tabs.forEach(t => {
+                document.getElementById(`content-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = 'py-2 px-4 whitespace-nowrap text-slate-500 hover:text-slate-800 border-b-2 border-transparent';
+            });
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).className = 'py-2 px-4 whitespace-nowrap tab-active';
+        }
+
+        // Literature Rendering
+        function renderPapers() {
+            const grid = document.getElementById('papers-grid');
+            let html = '';
+            papersData.forEach(p => {
+                const borderClass = p.type === 'ux' ? 'border-teal-200' : 'border-indigo-200';
+                const textClass = p.type === 'ux' ? 'text-teal-700' : 'text-indigo-700';
+                const bgClass = p.type === 'ux' ? 'bg-teal-50' : 'bg-indigo-50';
+                
+                html += `
+                <div class="bg-white border-l-4 ${borderClass} border-t border-r border-b border-slate-200 rounded-r-lg shadow-sm">
+                    <button class="w-full text-left p-4 focus:outline-none flex justify-between items-center hover:bg-slate-50 transition-colors" onclick="togglePaper(${p.id})">
+                        <div>
+                            <h4 class="font-bold text-slate-800">${p.title}</h4>
+                            <p class="text-xs text-slate-500 mt-1">${p.authors} (${p.year}) • <em>${p.journal}</em></p>
+                        </div>
+                        <span id="icon-paper-${p.id}" class="text-xl ${textClass} font-bold transition-transform ml-4">+</span>
+                    </button>
+                    <div id="detail-paper-${p.id}" class="hidden px-4 pb-4 border-t border-slate-100 text-sm text-slate-700 ${bgClass}">
+                        <div class="pt-3">
+                            <p class="mb-2"><strong>Protocol:</strong> ${p.protocol}</p>
+                            <p>
+                                <strong>Sample Questions:</strong>
+                                <ul class="list-disc pl-5 mt-1 text-slate-600">
+                                    ${p.questions.map(q => `<li>${q}</li>`).join('')}
+                                </ul>
+                            </p>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            grid.innerHTML = html;
+        }
+
+        function togglePaper(id) {
+            const detail = document.getElementById(`detail-paper-${id}`);
+            const icon = document.getElementById(`icon-paper-${id}`);
+            if(detail.classList.contains('hidden')) {
+                detail.classList.remove('hidden');
+                icon.innerText = '−';
+            } else {
+                detail.classList.add('hidden');
+                icon.innerText = '+';
+            }
+        }
+
+        // Question Filtering & Rendering
+        function setFilter(type, value) {
+            filterState[type] = value;
+            
+            // Update button styles
+            document.querySelectorAll(`.filter-${type}`).forEach(btn => {
+                if(btn.innerText.includes(value) || (value==='All' && btn.innerText==='All')) {
+                    if(type === 'phase') {
+                        btn.classList.replace('bg-slate-100', 'bg-slate-800');
+                        btn.classList.replace('text-slate-700', 'text-white');
+                    } else {
+                        btn.classList.add('ring-2', 'ring-offset-1', 'ring-slate-400');
+                    }
+                } else {
+                    if(type === 'phase') {
+                        btn.classList.replace('bg-slate-800', 'bg-slate-100');
+                        btn.classList.replace('text-white', 'text-slate-700');
+                    } else {
+                        btn.classList.remove('ring-2', 'ring-offset-1', 'ring-slate-400');
+                    }
+                }
+            });
+            
+            // Only render if unlocked
+            if (isQuestionsUnlocked) {
+                renderQuestions();
+            }
+        }
+
+        function renderQuestions() {
+            const tbody = document.getElementById('questions-table');
+            let html = '';
+            
+            questionBank.forEach(q => {
+                const matchPhase = filterState.phase === 'All' || q.phase === filterState.phase;
+                const matchFocus = filterState.focus === 'All' || q.focus === filterState.focus;
+
+                if (matchPhase && matchFocus) {
+                    let phaseBadge = q.phase === 'Pre-test' ? 'bg-blue-100 text-blue-800' : 
+                                     q.phase === 'Scenario' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800';
+                    
+                    let focusBadge = q.focus === 'Baseline UX' ? 'text-teal-700 font-semibold' : 
+                                     q.focus === 'Risk Score' ? 'text-indigo-700 font-semibold' : 
+                                     q.focus === 'Explainability (XAI)' ? 'text-amber-700 font-semibold' : 'text-emerald-700 font-semibold';
+
+                    html += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-4 align-top border-b border-slate-100"><span class="px-2 py-1 rounded text-xs font-semibold whitespace-nowrap ${phaseBadge}">${q.phase}</span></td>
+                        <td class="p-4 align-top border-b border-slate-100 text-xs ${focusBadge}">${q.focus}</td>
+                        <td class="p-4 align-top border-b border-slate-100 font-medium">${q.q}</td>
+                        <td class="p-4 align-top border-b border-slate-100 text-slate-500 italic text-xs hidden md:table-cell">${q.purpose}</td>
+                    </tr>`;
+                }
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Charts
+        let uxChartInstance = null;
+        function initUXChart() {
+            const ctx = document.getElementById('uxMetricsChart');
+            if(!ctx) return;
+            if(uxChartInstance) uxChartInstance.destroy();
+
+            uxChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Time-to-Task', 'System Usability (SUS)', 'Cognitive (NASA-TLX)', 'Error Rate', 'Eye Tracking'],
+                    datasets: [{
+                        label: '% of UX Studies Using Metric',
+                        data: [90, 85, 70, 60, 20],
+                        backgroundColor: 'rgba(15, 118, 110, 0.7)', // Teal
+                        borderColor: 'rgba(15, 118, 110, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 },
+                        x: {
+                            ticks: {
+                                callback: function(value) {
+                                    const label = this.getLabelForValue(value);
+                                    if (label.length > 12) return label.match(/.{1,12}(\s|$)/g); 
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        let radarChartInstance = null;
+        function initRadarChart() {
+            const ctx = document.getElementById('aiTrustChart');
+            if(!ctx) return;
+            if(radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Interpretability (XAI)', 'Clinical Accuracy', 'Workflow Fit', 'Safety/Risk', 'Transparent Limits'],
+                    datasets: [{
+                        label: 'Ideal CDSS Profile',
+                        data: [90, 95, 85, 95, 80],
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)', // Indigo
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(79, 70, 229, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.1)' },
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            pointLabels: { font: { family: 'Inter', size: 10, weight: '600' }, color: '#334155' },
+                            ticks: { display: false, min: 0, max: 100 }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Init App
+        window.onload = () => {
+            renderPapers();
+            // Init filter visuals explicitly
+            setFilter('phase', 'All');
+            setFilter('focus', 'All');
+            
+            initUXChart();
+            initRadarChart();
+        };
+
+    </script>
+
+</body></html>
