@@ -3,459 +3,531 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NICU Predict - Variant B (Clinical Severity)</title>
+    <title>NICU Predict - Clinical Decision Support Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .mono { font-family: 'Roboto Mono', monospace; }
-        
-        /* Clinical Severity Indicators */
-        .border-severity-high { border-left: 8px solid #ef4444; }
-        .border-severity-med { border-left: 8px solid #f59e0b; }
-        .border-severity-low { border-left: 8px solid #10b981; }
-
-        .tab-btn.active { border-bottom: 4px solid #0f172a; color: #0f172a; font-weight: 800; }
-        
-        .risk-gauge-bg { fill: #e2e8f0; }
-        .risk-gauge-fill { transition: stroke-dasharray 0.8s ease; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; }
+        :root { --p-color: #3b82f6; --p-bg: #eff6ff; }
+        .pink-theme { --p-color: #ec4899; --p-bg: #fdf2f8; --p-dark: #be185d; }
+        .blue-theme { --p-color: #3b82f6; --p-bg: #eff6ff; --p-dark: #1d4ed8; }
         
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-content.active { display: block; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Statistical Range Visualizer */
+        .range-track { height: 8px; background: #f1f5f9; border-radius: 4px; position: relative; width: 100%; margin: 12px 0; }
+        .range-iqr { height: 100%; background: #cbd5e1; opacity: 0.5; position: absolute; border-radius: 4px; }
+        .range-marker { height: 18px; width: 6px; background: var(--p-color); position: absolute; top: -5px; border-radius: 3px; box-shadow: 0 0 8px rgba(0,0,0,0.15); z-index: 10; transition: left 0.5s ease; }
+        .range-median { height: 100%; width: 2px; background: #475569; position: absolute; z-index: 5; }
+
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); }
+        .modal-content { background: white; margin: 5% auto; padding: 3rem; border-radius: 2.5rem; max-width: 800px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="text-slate-900 overflow-hidden">
+<body class="bg-slate-50 text-slate-900 min-h-screen">
 
-    <div class="flex h-screen">
-        <!-- Sidebar: Case Selection -->
-        <aside class="w-80 bg-slate-900 text-white flex flex-col shadow-2xl z-50">
-            <div class="p-8 border-b border-slate-800">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-white text-slate-900 flex items-center justify-center font-black text-xl">B</div>
-                    <h1 class="text-lg font-black tracking-tighter uppercase">NICU Variant B</h1>
-                </div>
-                <p class="text-[10px] text-slate-500 font-bold uppercase mt-2 tracking-widest">Objective Severity Logic</p>
+<div id="app" class="blue-theme">
+    <!-- Sidebar -->
+    <aside class="fixed left-0 top-0 h-full w-80 bg-white border-r border-slate-200 flex flex-col z-50 shadow-2xl">
+        <div class="p-8">
+            <div class="flex items-center gap-3 mb-2">
+                <div id="brand-box" class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black shadow-lg">N</div>
+                <h1 class="text-xl font-extrabold tracking-tight">NICU-Predict</h1>
             </div>
-            
-            <div class="p-4 flex-1 overflow-y-auto space-y-2 custom-scrollbar" id="patient-list">
-                <!-- Patient items injected by JS -->
+            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">CDSS Study Interface v3.0</p>
+        </div>
+
+        <nav class="px-4 space-y-1">
+            <button onclick="switchTab('comp')" id="nav-comp" class="w-full flex items-center gap-4 p-4 rounded-2xl transition-all font-bold text-blue-600 bg-blue-50 border border-blue-100">
+                <span>📋</span> Comprehensive View
+            </button>
+            <button onclick="switchTab('phys')" id="nav-phys" class="w-full flex items-center gap-4 p-4 rounded-2xl transition-all font-bold text-slate-400 hover:bg-slate-50">
+                <span>📈</span> Physiology Trends
+            </button>
+            <button onclick="switchTab('xai')" id="nav-xai" class="w-full flex items-center gap-4 p-4 rounded-2xl transition-all font-bold text-slate-400 hover:bg-slate-50">
+                <span>🧠</span> XAI Deep Dive
+            </button>
+        </nav>
+
+        <div class="mt-auto p-6 border-t border-slate-100 bg-slate-50/50">
+            <p class="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-widest">Select Patient Profile</p>
+            <div class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar pr-2" id="patient-list">
+                <!-- Patient list injected here -->
             </div>
+        </div>
+    </aside>
 
-            <div class="p-6 bg-slate-950 border-t border-slate-800 text-center">
-                <p class="text-[10px] text-slate-500 font-bold uppercase mb-2">Scenario Testing Mode</p>
-                <div class="text-[10px] text-slate-400 font-mono">N=157 STATISTICAL COHORT</div>
+    <!-- Main Content -->
+    <main class="ml-80 p-10 max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <header class="bg-white rounded-[2.5rem] p-10 shadow-sm border border-slate-200 mb-8 flex justify-between items-center relative overflow-hidden">
+            <div id="header-accent" class="absolute top-0 left-0 w-2 h-full bg-blue-600"></div>
+            <div class="flex gap-12">
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">ID & Gender</label>
+                    <div class="flex items-center gap-2">
+                        <span id="p-gender-icon" class="text-xl">♂️</span>
+                        <p id="p-id" class="text-2xl font-black text-slate-800">#4492-X</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Birth Wt / Gest Age</label>
+                    <p id="p-demo-top" class="text-2xl font-bold text-slate-800">3.1kg / 38w</p>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Primary Diagnosis</label>
+                    <p id="p-diag" class="text-2xl font-bold text-slate-800">HLHS (Sano)</p>
+                </div>
             </div>
-        </aside>
-
-        <!-- Main Content Workspace -->
-        <main class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="bg-white border-b border-slate-200 px-10 py-8 flex justify-between items-center shadow-sm">
-                <div class="flex gap-16">
-                    <div>
-                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Patient Identifier</div>
-                        <div class="text-3xl font-black text-slate-800" id="header-id">#4492-X</div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Birth Weight / GA</div>
-                        <div class="text-2xl font-bold text-slate-700" id="header-stats">1.25kg / 28w</div>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-10">
-                    <div class="text-right">
-                        <div class="text-[10px] font-black text-slate-400 uppercase mb-1">Model Confidence</div>
-                        <div class="text-xs font-mono font-bold text-slate-500">P-VALUE: < 0.001</div>
-                    </div>
-                    <!-- Risk Circular Gauge -->
-                    <div class="relative w-24 h-24">
-                        <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                            <circle class="risk-gauge-bg" cx="18" cy="18" r="16" fill="none" stroke-width="3"/>
-                            <circle id="risk-gauge-path" class="risk-gauge-fill" cx="18" cy="18" r="16" fill="none" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round"/>
-                        </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span id="risk-text" class="text-2xl font-black">0%</span>
-                            <span class="text-[8px] font-bold uppercase text-slate-400">Risk</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Navigation Tabs -->
-            <div class="bg-white border-b border-slate-200 px-10 flex gap-10">
-                <button onclick="switchTab('overview')" id="tab-btn-overview" class="tab-btn active py-5 text-xs font-black uppercase tracking-[0.15em] transition-all">1. Executive Summary</button>
-                <button onclick="switchTab('phys')" id="tab-btn-phys" class="tab-btn py-5 text-xs font-black uppercase tracking-[0.15em] transition-all">2. Physiological Trends</button>
-                <button onclick="switchTab('bench')" id="tab-btn-bench" class="tab-btn py-5 text-xs font-black uppercase tracking-[0.15em] transition-all">3. Cohort Benchmarking</button>
+            <div class="text-right">
+                <div id="risk-pill" class="px-8 py-3 rounded-2xl font-black text-2xl border-4 transition-all duration-500">82% RISK</div>
+                <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Model Confidence: 0.94</p>
             </div>
+        </header>
 
-            <!-- Content Area -->
-            <div class="flex-1 overflow-y-auto p-10 bg-slate-50 custom-scrollbar">
-                
-                <!-- TAB: EXECUTIVE SUMMARY -->
-                <div id="tab-overview" class="tab-content active space-y-8">
-                    <div class="grid grid-cols-12 gap-8">
-                        <!-- Structured Findings List -->
-                        <div class="col-span-12 lg:col-span-7 bg-white rounded-2xl p-8 shadow-sm border border-slate-200" id="severity-card">
-                            <h3 class="text-xs font-black text-slate-400 uppercase mb-6 flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-slate-400"></span> Clinical Findings & Justification
-                            </h3>
-                            <div class="space-y-3" id="findings-list">
-                                <!-- Findings injected here -->
-                            </div>
+        <!-- TAB 1: COMPREHENSIVE -->
+        <div id="tab-comp" class="tab-content active space-y-6">
+            <div class="grid grid-cols-12 gap-6">
+                <!-- PRE-GENERATED NARRATIVE -->
+                <div class="col-span-12 lg:col-span-8 bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative min-h-[320px] flex flex-col">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-sm font-bold">A</span>
+                        <h3 class="text-xl font-bold">Clinical Synthesis & Action Plan</h3>
+                    </div>
+                    <p id="comp-narrative" class="text-lg leading-relaxed text-slate-200 font-medium italic">
+                        "Pre-generated clinical narrative loading..."
+                    </p>
+                    <div class="mt-auto pt-8 grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-white/5 border border-white/10 rounded-2xl">
+                            <p class="text-[10px] text-indigo-300 font-bold uppercase mb-1">Critical Insight</p>
+                            <p id="comp-insight" class="text-sm font-bold">MBP is drifting below study median (42 vs 52 mmHg).</p>
                         </div>
-
-                        <!-- Urgency Snapshot -->
-                        <div class="col-span-12 lg:col-span-5 grid grid-cols-2 gap-4">
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-2">Heart Rate</span>
-                                <div class="text-4xl font-black" id="v-hr">--</div>
-                                <div class="text-[10px] font-bold text-slate-400 mt-2" id="v-hr-slope">-- BPM/H</div>
-                            </div>
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-2">SpO2</span>
-                                <div class="text-4xl font-black" id="v-spo2">--</div>
-                                <div class="text-[10px] font-bold text-slate-400 mt-2" id="v-spo2-slope">-- %/H</div>
-                            </div>
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm" id="mbp-card">
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-2">Mean BP</span>
-                                <div class="text-4xl font-black" id="v-mbp">--</div>
-                                <div class="text-[10px] font-bold text-slate-400 mt-2" id="v-mbp-slope">-- mmHg/H</div>
-                            </div>
-                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                <span class="text-[10px] font-black text-slate-400 uppercase block mb-2">Pulse Press.</span>
-                                <div class="text-4xl font-black" id="v-pp">--</div>
-                                <div class="text-[10px] font-bold text-slate-500 mt-2 uppercase">Systolic-Diastolic</div>
-                            </div>
-                        </div>
-
-                        <!-- Integrated Risk Drivers (XAI) -->
-                        <div class="col-span-12 bg-slate-900 rounded-2xl p-8 text-white">
-                            <h3 class="text-xs font-black text-slate-500 uppercase mb-8 tracking-widest">Primary Risk Drivers (Local SHAP contribution)</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-10" id="driver-grid">
-                                <!-- Drivers injected here -->
-                            </div>
+                        <div class="p-4 bg-white/5 border border-white/10 rounded-2xl">
+                            <p class="text-[10px] text-indigo-300 font-bold uppercase mb-1">Recommendation</p>
+                            <p id="comp-rec" class="text-sm font-bold">Prepare for bedside echocardiogram evaluation.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB: PHYSIOLOGY -->
-                <div id="tab-phys" class="tab-content space-y-8">
-                    <div class="bg-white rounded-2xl p-10 shadow-sm border border-slate-200">
-                        <div class="flex justify-between items-center mb-10">
-                            <h3 class="text-sm font-black text-slate-400 uppercase">12-Hour Hemodynamic Perfusion Plot</h3>
-                            <div class="flex gap-6">
-                                <span class="flex items-center gap-2 text-[10px] font-black"><span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> HR</span>
-                                <span class="flex items-center gap-2 text-[10px] font-black"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> SpO2</span>
-                                <span class="flex items-center gap-2 text-[10px] font-black"><span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> MBP</span>
-                            </div>
+                <!-- Snapshot Vitals -->
+                <div class="col-span-12 lg:col-span-4 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                    <h3 class="text-xs font-black text-slate-400 uppercase mb-8">Vital Statistics (Current)</h3>
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-end border-b border-slate-50 pb-4">
+                            <div><p class="text-[10px] font-black text-slate-400 uppercase">Heart Rate</p><p id="v-hr" class="text-3xl font-black">142</p></div>
+                            <div class="text-right"><p class="text-xs font-bold text-slate-400">bpm</p><span id="v-hr-tag" class="text-[9px] font-black bg-green-50 text-green-600 px-2 py-0.5 rounded uppercase">Stable</span></div>
                         </div>
-                        <div style="height: 500px;">
-                            <canvas id="physChart"></canvas>
+                        <div class="flex justify-between items-end border-b border-slate-50 pb-4">
+                            <div><p class="text-[10px] font-black text-slate-400 uppercase">SpO2</p><p id="v-spo2" class="text-3xl font-black">84</p></div>
+                            <div class="text-right"><p class="text-xs font-bold text-slate-400">%</p><span id="v-spo2-tag" class="text-[9px] font-black bg-amber-50 text-amber-600 px-2 py-0.5 rounded uppercase">Target</span></div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- TAB: BENCHMARKING -->
-                <div id="tab-bench" class="tab-content space-y-8">
-                    <div class="bg-white rounded-2xl p-10 shadow-sm border border-slate-200">
-                        <h3 class="text-sm font-black text-slate-400 uppercase mb-10 text-center">Patient Distribution vs. Cohort Medians (N=157)</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-20 gap-y-16" id="bench-grid">
-                            <!-- Benchmarking items here -->
+                        <div class="flex justify-between items-end">
+                            <div><p class="text-[10px] font-black text-slate-400 uppercase">MBP</p><p id="v-mbp" class="text-3xl font-black text-red-600">42</p></div>
+                            <div class="text-right"><p class="text-xs font-bold text-slate-400">mmHg</p><span id="v-mbp-tag" class="text-[9px] font-black bg-red-50 text-red-600 px-2 py-0.5 rounded uppercase">Falling</span></div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Statistical Feature Grid -->
+                <div class="col-span-12 bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-800 mb-10 flex items-center gap-3">
+                        <span>📊</span> Cohort Statistical Benchmarking 
+                        <span class="text-xs font-normal text-slate-400">(Current Patient vs Study Cohort Median/IQR)</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-12" id="stats-grid">
+                        <!-- Stats injected here -->
+                    </div>
+                </div>
             </div>
-        </main>
-    </div>
+        </div>
+
+        <!-- TAB 2: PHYSIOLOGY -->
+        <div id="tab-phys" class="tab-content space-y-6">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-9 bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm relative">
+                    <h3 class="text-xl font-bold mb-8">Physiological Trajectory (12-Hour)</h3>
+                    <div style="height: 450px;"><canvas id="physTrendChart"></canvas></div>
+                </div>
+                <div class="col-span-12 lg:col-span-3 flex flex-col gap-6">
+                    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm flex-1">
+                        <h4 class="text-xs font-black text-slate-400 uppercase mb-8">Hemodynamic Slopes</h4>
+                        <div class="space-y-10" id="slope-container"></div>
+                    </div>
+                    <div class="bg-slate-900 p-8 rounded-[2.5rem] text-white">
+                        <h4 class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest">Pulse Pressure</h4>
+                        <div class="flex items-end gap-3">
+                            <span id="v-pp" class="text-5xl font-black text-red-400">33</span>
+                            <span class="text-xs font-bold text-slate-500 mb-2">mmHg</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-4 leading-relaxed font-medium">Pulse pressure narrowing is a significant indicator of shunt insufficiency in this weight class.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: XAI DEEP DIVE -->
+        <div id="tab-xai" class="tab-content space-y-6">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-7 bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                    <h3 class="text-xl font-bold mb-10">Machine Learning Feature Importance (SHAP)</h3>
+                    <div style="height: 450px;"><canvas id="xaiChart"></canvas></div>
+                </div>
+                <div class="col-span-12 lg:col-span-5 flex flex-col gap-6">
+                    <div class="bg-indigo-50 p-10 rounded-[2.5rem] border border-indigo-100 flex-1">
+                        <h3 class="text-xl font-bold text-indigo-900 mb-6 flex items-center gap-2"><span>🛡️</span> Model Reasoning</h3>
+                        <div id="xai-impact-list" class="space-y-6">
+                            <!-- Impact cards here -->
+                        </div>
+                    </div>
+                    <div class="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm">
+                        <h4 class="text-xs font-black text-slate-400 uppercase mb-4">Shunt-to-Weight Ratio</h4>
+                        <div class="flex items-center gap-4">
+                            <div id="v-stwr" class="text-3xl font-black text-red-600">3.18</div>
+                            <div class="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                                <div id="v-stwr-bar" class="h-full bg-red-500" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-2 font-bold uppercase">Threshold Trigger: 3.0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
 
     <!-- Details Modal -->
     <div id="detailModal" class="modal" onclick="closeModal(event)">
-        <div class="modal-content shadow-2xl">
-            <h2 id="modalTitle" class="text-2xl font-black text-slate-900 mb-4 uppercase tracking-tighter">Feature Detail Analysis</h2>
-            <div id="modalBody" class="text-slate-600 leading-relaxed text-lg space-y-4"></div>
-            <div class="mt-10 pt-6 border-t border-slate-100 flex justify-end">
-                <button onclick="closeModal()" class="px-8 py-3 bg-slate-900 text-white rounded font-bold uppercase text-[10px] tracking-widest shadow-lg">Close Record</button>
+        <div class="modal-content" id="modalBorder">
+            <h2 id="modalTitle" class="text-4xl font-black text-slate-800 mb-4">Metric Detail</h2>
+            <div id="modalBody" class="text-slate-600 text-xl leading-relaxed space-y-4"></div>
+            <div class="mt-12 pt-8 border-t border-slate-100 flex justify-end">
+                <button onclick="closeModal()" class="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black shadow-xl hover:scale-105 transition">Understood</button>
             </div>
         </div>
     </div>
+</div>
 
 <script>
-    // --- STATISTICAL COHORT DATA ---
-    const cohort = {
-        birthWt: { median: 3.1, iqr: [2.8, 3.5], min: 1.2, max: 4.8 },
-        gestAge: { median: 38.0, iqr: [37, 39], min: 24, max: 42 },
-        surgAge: { median: 8.3, iqr: [6.3, 16.0], min: 2, max: 45 }
-    };
-
-    // --- 5 SCENARIO PROFILES ---
-    const profiles = [
+    // --- DATABASE: 5 UNIQUE PATIENT PROFILES ---
+    const patients = [
         {
-            id: '4492-X', gender: 'Male', risk: 82, diag: 'HLHS (Sano)', severity: 'high',
+            id: '4492-X', gender: 'Male', risk: 82, diag: 'HLHS (Sano Shunt)', theme: 'blue-theme',
             vitals: { hr: 142, spo2: 84, mbp: 42, sys: 65, dia: 32 },
             slopes: { hr: '+1.4', spo2: '-0.2', mbp: '-2.1' },
-            findings: [
-                { label: "Hemodynamic Instability", val: "CRITICAL", msg: "MBP decreased 10mmHg in 4 hours (-2.1/hr)." },
-                { label: "Anatomic Risk Factor", val: "HIGH", msg: "Shunt-to-weight ratio (3.18) exceeds 3.0 safety threshold." },
-                { label: "Cohort Outlier", val: "YES", msg: "Birth weight (1.25kg) is in lowest 5% of study cohort." },
-                { label: "Compensatory Tachycardia", val: "ACTIVE", msg: "HR climbing (+1.4/hr) to sustain perfusion." }
-            ],
-            drivers: [
-                { name: "MBP Trend", impact: 88, type: "red" },
-                { name: "Shunt-to-Wt", impact: 72, type: "red" },
-                { name: "Birth Weight", impact: 45, type: "red" },
-                { name: "Gest Age", impact: 12, type: "blue" }
-            ],
+            narrative: "Patient #4492-X is at extremely high risk for acute shunt occlusion. Over the last 4 hours, Mean Blood Pressure has drifted from 52 to 42 mmHg, while heart rate has climbed from 135 to 142 bpm. This combination of rising tachycardia and falling perfusion pressure is highly concerning for acute hemodynamics compromise.",
+            insight: "The Shunt-to-Weight ratio (3.18) exceeds the high-risk threshold of 3.0.",
+            recommendation: "Increase heparin titration and schedule urgent surgical review.",
             stats: [
-                { name: "Birth Weight", val: 1.25, ref: cohort.birthWt },
-                { name: "Gest. Age", val: 28, ref: cohort.gestAge },
-                { name: "Surg. Age", val: 12, ref: cohort.surgAge }
+                { name: 'Birth Weight (kg)', val: 1.25, median: 3.1, iqr: [2.8, 3.5], min: 1.2, max: 4.8 },
+                { name: 'Gestational Age (wk)', val: 28, median: 38, iqr: [37, 39], min: 24, max: 42 },
+                { name: 'Age at Surgery (day)', val: 12, median: 8.3, iqr: [6.3, 16], min: 2, max: 45 }
+            ],
+            categorical: [
+                { name: 'Premature', val: 'Yes', prev: '17.2%' },
+                { name: 'TAPVR Fix', val: 'None', prev: '92.1%' },
+                { name: 'Open Sternum', val: 'Yes', prev: '44.6%' }
+            ],
+            xai: [
+                { label: 'MBP Slope', impact: 85, type: 'red' },
+                { label: 'Shunt-to-Wt', impact: 70, type: 'red' },
+                { label: 'Birth Weight', impact: 35, type: 'red' },
+                { label: 'Gestational Age', impact: 20, type: 'blue' }
             ]
         },
         {
-            id: '8812-F', gender: 'Female', risk: 14, diag: 'Tricuspid Atresia', severity: 'low',
-            vitals: { hr: 132, spo2: 89, mbp: 55, sys: 82, dia: 42 },
-            slopes: { hr: '-0.1', spo2: '0.0', mbp: '+0.2' },
-            findings: [
-                { label: "Hemodynamic Profile", val: "STABLE", msg: "Perfusion pressures maintained at baseline median." },
-                { label: "Anatomic Ratio", val: "SAFE", msg: "Weight-to-shunt ratio (1.84) within target bounds." },
-                { label: "Baseline Factor", val: "PROTECTIVE", msg: "Birth weight (3.4kg) is above cohort median." }
-            ],
-            drivers: [
-                { name: "Birth Weight", impact: 92, type: "blue" },
-                { name: "Trend Stability", impact: 85, type: "blue" },
-                { name: "Gest Age", impact: 25, type: "blue" }
-            ],
+            id: '8812-F', gender: 'Female', risk: 14, diag: 'Tricuspid Atresia', theme: 'pink-theme',
+            vitals: { hr: 138, spo2: 88, mbp: 54, sys: 78, dia: 42 },
+            slopes: { hr: '-0.1', spo2: '+0.1', mbp: '+0.4' },
+            narrative: "Stable post-operative course. Physiological signals are robust with healthy heart rate variability and stable perfusion pressures. The protective effect of a high birth weight (3.6kg) significantly lowers the occlusion risk profile according to the predictive model ensemble.",
+            insight: "MBP has remained consistently >50 mmHg for the last 12 hours.",
+            recommendation: "Continue standard post-op monitoring; consider tapering sedation.",
             stats: [
-                { name: "Birth Weight", val: 3.4, ref: cohort.birthWt },
-                { name: "Gest. Age", val: 40, ref: cohort.gestAge },
-                { name: "Surg. Age", val: 7, ref: cohort.surgAge }
+                { name: 'Birth Weight (kg)', val: 3.6, median: 3.1, iqr: [2.8, 3.5], min: 1.2, max: 4.8 },
+                { name: 'Gestational Age (wk)', val: 39, median: 38, iqr: [37, 39], min: 24, max: 42 },
+                { name: 'Age at Surgery (day)', val: 7, median: 8.3, iqr: [6.3, 16], min: 2, max: 45 }
+            ],
+            categorical: [
+                { name: 'Premature', val: 'No', prev: '82.8%' },
+                { name: 'TAPVR Fix', val: 'None', prev: '92.1%' },
+                { name: 'Open Sternum', val: 'No', prev: '55.4%' }
+            ],
+            xai: [
+                { label: 'Birth Weight', impact: 90, type: 'blue' },
+                { label: 'MBP Stability', impact: 75, type: 'blue' },
+                { label: 'Gest Age', impact: 40, type: 'blue' },
+                { label: 'Gender', impact: 10, type: 'red' }
             ]
         },
         {
-            id: '3319-M', gender: 'Male', risk: 42, diag: 'Pulm. Atresia (BT Shunt)', severity: 'med',
-            vitals: { hr: 155, spo2: 78, mbp: 46, sys: 66, dia: 38 },
-            slopes: { hr: '+2.8', spo2: '-1.4', mbp: '-0.5' },
-            findings: [
-                { label: "Oxygenation Volatility", val: "BORDERLINE", msg: "SpO2 (78%) drifting toward clinical low threshold." },
-                { label: "Prematurity Impact", val: "HIGH", msg: "Born at 27w 1d; increases physiological sensitivity." },
-                { label: "Complex Repair", val: "TAPVR-1", msg: "TAPVR repair history complicates flow dynamics." }
-            ],
-            drivers: [
-                { name: "Weight (<1kg)", impact: 95, type: "red" },
-                { name: "HR Volatility", impact: 58, type: "red" },
-                { name: "TAPVR Fixing", impact: 35, type: "red" }
-            ],
+            id: '3319-M', gender: 'Male', risk: 42, diag: 'Pulm. Atresia (BT Shunt)', theme: 'blue-theme',
+            vitals: { hr: 155, spo2: 76, mbp: 48, sys: 66, dia: 38 },
+            slopes: { hr: '+2.8', spo2: '-1.4', mbp: '-0.4' },
+            narrative: "Moderate risk level driven by persistent tachycardia and borderline oxygenation (SpO2 76%). While MBP is currently stable, the rising HR trend suggests the patient is working harder to maintain systemic output via the shunt, potentially due to flow turbulence.",
+            insight: "SpO2 is drifting towards the lower threshold limit (75%).",
+            recommendation: "Observe closely for further SpO2 drops or widening pulse pressure.",
             stats: [
-                { name: "Birth Weight", val: 0.92, ref: cohort.birthWt },
-                { name: "Gest. Age", val: 27, ref: cohort.gestAge },
-                { name: "Surg. Age", val: 22, ref: cohort.surgAge }
+                { name: 'Birth Weight (kg)', val: 2.1, median: 3.1, iqr: [2.8, 3.5], min: 1.2, max: 4.8 },
+                { name: 'Gestational Age (wk)', val: 34, median: 38, iqr: [37, 39], min: 24, max: 42 },
+                { name: 'Age at Surgery (day)', val: 22, median: 8.3, iqr: [6.3, 16], min: 2, max: 45 }
+            ],
+            categorical: [
+                { name: 'Premature', val: 'Yes', prev: '17.2%' },
+                { name: 'TAPVR Fix', val: 'Type 1', prev: '2.1%' },
+                { name: 'Open Sternum', val: 'No', prev: '55.4%' }
+            ],
+            xai: [
+                { label: 'Weight (<Cohort)', impact: 65, type: 'red' },
+                { label: 'HR Trend', impact: 55, type: 'red' },
+                { label: 'TAPVR Repair', impact: 40, type: 'red' },
+                { label: 'Surg Age', impact: 20, type: 'blue' }
             ]
         },
         {
-            id: '9901-L', gender: 'Female', risk: 65, diag: 'HLHS (Sano)', severity: 'high',
+            id: '9901-L', gender: 'Female', risk: 65, diag: 'HLHS (Sano Shunt)', theme: 'pink-theme',
             vitals: { hr: 148, spo2: 91, mbp: 48, sys: 64, dia: 37 },
-            slopes: { hr: '+0.5', spo2: '+2.1', mbp: '-1.2' },
-            findings: [
-                { label: "Over-circulation Marker", val: "WARNING", msg: "SpO2 (91%) is abnormally high for this shunt type." },
-                { label: "Systemic Steal", val: "LIKELY", msg: "High SpO2 correlating with dropping Mean Blood Pressure." },
-                { label: "Pulse Pressure", val: "NARROW", msg: "Diastolic runoff detected (Sys: 64, Dia: 37)." }
-            ],
-            drivers: [
-                { name: "High SpO2", impact: 82, type: "red" },
-                { name: "MBP Slope", impact: 55, type: "red" },
-                { name: "Shunt-to-Wt", impact: 40, type: "red" }
-            ],
+            slopes: { hr: '+0.5', spo2: '+2.1', mbp: '-1.1' },
+            narrative: "Patient #9901-L shows classic signs of pulmonary over-circulation. High SpO2 (91%) in a Sano-shunt patient typically indicates excessive pulmonary blood flow 'stealing' from systemic perfusion, which is reflected in the drifting MAP and narrowing pulse pressure.",
+            insight: "SpO2 is significantly higher than target range (75-85%).",
+            recommendation: "Evaluate for pulmonary flooding and consider diuretic management.",
             stats: [
-                { name: "Birth Weight", val: 2.8, ref: cohort.birthWt },
-                { name: "Gest. Age", val: 37, ref: cohort.gestAge },
-                { name: "Surg. Age", val: 5, ref: cohort.surgAge }
+                { name: 'Birth Weight (kg)', val: 2.8, median: 3.1, iqr: [2.8, 3.5], min: 1.2, max: 4.8 },
+                { name: 'Gestational Age (wk)', val: 37, median: 38, iqr: [37, 39], min: 24, max: 42 },
+                { name: 'Age at Surgery (day)', val: 5, median: 8.3, iqr: [6.3, 16], min: 2, max: 45 }
+            ],
+            categorical: [
+                { name: 'Premature', val: 'No', prev: '82.8%' },
+                { name: 'TAPVR Fix', val: 'None', prev: '92.1%' },
+                { name: 'Open Sternum', val: 'Yes', prev: '44.6%' }
+            ],
+            xai: [
+                { label: 'High SpO2', impact: 80, type: 'red' },
+                { label: 'MBP Slope', impact: 50, type: 'red' },
+                { label: 'Shunt-to-Wt', impact: 45, type: 'red' },
+                { label: 'Gest Age', impact: 15, type: 'blue' }
             ]
         },
         {
-            id: '1204-S', gender: 'Male', risk: 28, diag: 'ToF with PA', severity: 'low',
+            id: '1204-S', gender: 'Male', risk: 32, diag: 'ToF with PA', theme: 'blue-theme',
             vitals: { hr: 134, spo2: 81, mbp: 51, sys: 72, dia: 40 },
             slopes: { hr: '0.0', spo2: '-0.1', mbp: '-0.2' },
-            findings: [
-                { label: "Baseline Stability", val: "PROTECTIVE", msg: "Physiological trajectories remain flat over 12h." },
-                { label: "Birth Weight Factor", val: "MEDIAN", msg: "Birth weight (3.4kg) is in the safe 50th percentile." },
-                { label: "Surgical Recovery", val: "TYPICAL", msg: "Absence of post-operative complications detected." }
-            ],
-            drivers: [
-                { name: "Weight Median", impact: 80, type: "blue" },
-                { name: "Slope Flat", impact: 72, type: "blue" },
-                { name: "Gest Age", impact: 45, type: "blue" }
-            ],
+            narrative: "Generally stable baseline for this post-operative phase. All physiological markers are within target range. The low risk score is supported by a larger birth weight and absence of early post-operative complications like Arrhythmia or significant MAP drift.",
+            insight: "Pulse pressure is robust (32 mmHg) with stable MAP.",
+            recommendation: "Maintain current management and monitor for hemodynamic shifts.",
             stats: [
-                { name: "Birth Weight", val: 3.4, ref: cohort.birthWt },
-                { name: "Gest. Age", val: 40, ref: cohort.gestAge },
-                { name: "Surg. Age", val: 14, ref: cohort.surgAge }
+                { name: 'Birth Weight (kg)', val: 3.4, median: 3.1, iqr: [2.8, 3.5], min: 1.2, max: 4.8 },
+                { name: 'Gestational Age (wk)', val: 40, median: 38, iqr: [37, 39], min: 24, max: 42 },
+                { name: 'Age at Surgery (day)', val: 14, median: 8.3, iqr: [6.3, 16], min: 2, max: 45 }
+            ],
+            categorical: [
+                { name: 'Premature', val: 'No', prev: '82.8%' },
+                { name: 'TAPVR Fix', val: 'None', prev: '92.1%' },
+                { name: 'Open Sternum', val: 'No', prev: '55.4%' }
+            ],
+            xai: [
+                { label: 'Birth Weight', impact: 70, type: 'blue' },
+                { label: 'Stable Trends', impact: 65, type: 'blue' },
+                { label: 'Gest Age', impact: 50, type: 'blue' },
+                { label: 'Shunt Size', impact: 15, type: 'red' }
             ]
         }
     ];
 
-    let activeIdx = 0;
-    let currentTab = 'overview';
-    let chartPhys = null;
-
-    function switchTab(id) {
-        currentTab = id;
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.getElementById(`tab-${id}`).classList.add('active');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`tab-btn-${id}`).classList.add('active');
-        
-        if (id === 'phys') renderChart();
-        if (id === 'bench') renderBench();
-    }
+    // --- APP LOGIC ---
+    let activePatientIndex = 0;
+    let activeTabId = 'comp';
+    let chartInstance = null;
+    let xaiInstance = null;
 
     function setPatient(idx) {
-        activeIdx = idx;
-        const p = profiles[idx];
-
-        // UI Text
-        document.getElementById('header-id').innerText = `#${p.id}`;
-        document.getElementById('header-stats').innerText = `${p.stats[0].val}kg / ${p.stats[1].val}w`;
+        activePatientIndex = idx;
+        const p = patients[idx];
         
-        // Risk Gauge
-        const path = document.getElementById('risk-gauge-path');
-        const txt = document.getElementById('risk-text');
-        const color = p.risk > 60 ? '#ef4444' : (p.risk > 35 ? '#f59e0b' : '#10b981');
-        path.setAttribute('stroke-dasharray', `${p.risk}, 100`);
-        path.setAttribute('stroke', color);
-        txt.innerText = `${p.risk}%`;
-
-        // Overview: Severity Card
-        const card = document.getElementById('severity-card');
-        card.className = `col-span-12 lg:col-span-7 bg-white rounded-2xl p-8 shadow-sm border border-slate-200 border-severity-${p.severity}`;
+        // Theme & Header
+        document.getElementById('app').className = p.theme;
+        document.getElementById('p-id').innerText = `#${p.id}`;
+        document.getElementById('p-gender-icon').innerText = p.gender === 'Male' ? '♂️' : '♀️';
+        document.getElementById('p-demo-top').innerText = `${p.stats[0].val}kg / ${p.stats[1].val}w`;
+        document.getElementById('p-diag').innerText = p.diag;
         
-        // Findings List
-        const list = document.getElementById('findings-list');
-        list.innerHTML = p.findings.map(f => `
-            <div class="flex items-start gap-4 p-4 bg-slate-50 rounded-xl cursor-help hover:bg-slate-100 transition" onclick="showModal('${f.label}')">
-                <span class="mono text-[10px] font-bold px-2 py-1 rounded bg-white border border-slate-200">${f.val}</span>
-                <div>
-                    <div class="text-xs font-black text-slate-800">${f.label}</div>
-                    <div class="text-[11px] text-slate-500 font-medium">${f.msg}</div>
-                </div>
-            </div>
-        `).join('');
+        const riskPill = document.getElementById('risk-pill');
+        riskPill.innerText = `${p.risk}% RISK`;
+        riskPill.className = `px-8 py-3 rounded-2xl font-black text-2xl border-4 transition-all ${p.risk > 60 ? 'bg-red-50 border-red-500 text-red-600 animate-pulse' : (p.risk > 35 ? 'bg-amber-50 border-amber-400 text-amber-600' : 'bg-green-50 border-green-500 text-green-600')}`;
 
-        // Vitals
+        // Comp Tab Content
+        document.getElementById('comp-narrative').innerText = `"${p.narrative}"`;
+        document.getElementById('comp-insight').innerText = p.insight;
+        document.getElementById('comp-rec').innerText = p.recommendation;
         document.getElementById('v-hr').innerText = p.vitals.hr;
-        document.getElementById('v-hr-slope').innerText = p.slopes.hr;
         document.getElementById('v-spo2').innerText = p.vitals.spo2;
-        document.getElementById('v-spo2-slope').innerText = p.slopes.spo2;
         document.getElementById('v-mbp').innerText = p.vitals.mbp;
-        document.getElementById('v-mbp-slope').innerText = p.slopes.mbp;
         document.getElementById('v-pp').innerText = p.vitals.sys - p.vitals.dia;
-        
-        const mbpCard = document.getElementById('mbp-card');
-        mbpCard.className = `p-6 rounded-2xl border border-slate-200 shadow-sm ${parseFloat(p.slopes.mbp) < -1.0 ? 'bg-red-50 border-red-200' : 'bg-white'}`;
 
-        // Risk Drivers
-        const drivers = document.getElementById('driver-grid');
-        drivers.innerHTML = p.drivers.map(d => `
-            <div class="space-y-3">
-                <div class="flex justify-between text-[10px] font-black uppercase">
-                    <span class="text-slate-500">${d.name}</span>
-                    <span class="${d.type==='red'?'text-red-400':'text-blue-400'}">${d.type==='red'?'+':'-'}${d.impact}%</span>
+        // Slopes & Trends
+        const slopeCont = document.getElementById('slope-container');
+        slopeCont.innerHTML = `
+            <div><p class="text-[9px] font-black text-slate-400 uppercase">MBP Drift (4h)</p><p class="text-3xl font-black ${parseFloat(p.slopes.mbp)<0?'text-red-500':'text-green-500'}">${p.slopes.mbp}</p></div>
+            <div><p class="text-[9px] font-black text-slate-400 uppercase">HR Slope</p><p class="text-3xl font-black">${p.slopes.hr}</p></div>
+            <div><p class="text-[9px] font-black text-slate-400 uppercase">SpO2 Stability</p><p class="text-3xl font-black">${p.slopes.spo2}</p></div>
+        `;
+
+        // Stats Benchmarking Grid
+        const grid = document.getElementById('stats-grid');
+        grid.innerHTML = '';
+        
+        // Numerical range visualizers
+        p.stats.forEach(s => {
+            const range = s.max - s.min;
+            const markerPos = ((s.val - s.min) / range) * 100;
+            const medianPos = ((s.median - s.min) / range) * 100;
+            const iqrStart = ((s.iqr[0] - s.min) / range) * 100;
+            const iqrWidth = ((s.iqr[1] - s.iqr[0]) / range) * 100;
+            
+            grid.innerHTML += `
+                <div class="space-y-3 cursor-help group" onclick="showMetricDetail('${s.name}')">
+                    <div class="flex justify-between items-end">
+                        <span class="text-xs font-black text-slate-400 uppercase">${s.name}</span>
+                        <span class="text-xl font-black text-slate-800">${s.val}</span>
+                    </div>
+                    <div class="range-track">
+                        <div class="range-iqr" style="left:${iqrStart}%; width:${iqrWidth}%"></div>
+                        <div class="range-median" style="left:${medianPos}%"></div>
+                        <div class="range-marker" style="left:${markerPos}%"></div>
+                    </div>
+                    <div class="flex justify-between text-[8px] font-bold text-slate-400">
+                        <span>Cohort Min: ${s.min}</span>
+                        <span>Median: ${s.median}</span>
+                        <span>Max: ${s.max}</span>
+                    </div>
                 </div>
-                <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div class="h-full ${d.type==='red'?'bg-red-500':'bg-blue-500'}" style="width: ${d.impact}%"></div>
+            `;
+        });
+        
+        // Categorical prevalence cards
+        p.categorical.forEach(c => {
+            grid.innerHTML += `
+                <div class="p-6 rounded-3xl bg-slate-50 border border-slate-100 flex justify-between items-center cursor-help" onclick="showMetricDetail('${c.name}')">
+                    <div>
+                        <p class="text-[9px] font-black text-slate-400 uppercase mb-2">${c.name}</p>
+                        <p class="text-2xl font-black text-slate-800">${c.val}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[9px] font-black px-2 py-1 rounded bg-blue-100 text-blue-700 uppercase">Prev: ${c.prev}</span>
+                    </div>
                 </div>
+            `;
+        });
+
+        // XAI Driver Breakdown
+        const driverList = document.getElementById('xai-impact-list');
+        driverList.innerHTML = p.xai.map(x => `
+            <div class="flex justify-between items-center p-4 rounded-2xl bg-white/60">
+                <span class="text-sm font-bold text-slate-700">${x.label}</span>
+                <span class="text-xs font-black px-3 py-1 rounded-full ${x.type==='red'?'bg-red-100 text-red-600': 'bg-blue-100 text-blue-600'}">
+                    ${x.type==='red'?'+':'-'}${x.impact} Impact
+                </span>
             </div>
         `).join('');
 
         renderPatientList();
-        if (currentTab === 'phys') renderChart();
-        if (currentTab === 'bench') renderBench();
+        switchTab(activeTabId);
     }
 
     function renderPatientList() {
         const list = document.getElementById('patient-list');
-        list.innerHTML = profiles.map((p, i) => `
-            <button onclick="setPatient(${i})" class="w-full text-left p-5 rounded-xl transition-all ${i === activeIdx ? 'bg-blue-700 shadow-xl translate-x-2' : 'hover:bg-slate-800 opacity-60'}">
+        list.innerHTML = patients.map((p, i) => `
+            <button onclick="setPatient(${i})" class="w-full text-left p-4 rounded-2xl transition-all ${i === activePatientIndex ? 'bg-white shadow-lg ring-2 ring-slate-100 translate-x-1' : 'hover:bg-white/50 opacity-60'}">
                 <div class="flex justify-between items-center mb-1">
-                    <span class="text-xs font-black tracking-widest">#${p.id}</span>
-                    <span class="${p.risk > 60 ? 'text-red-400' : 'text-green-400'} mono font-bold">${p.risk}%</span>
+                    <span class="text-xs font-black text-slate-800">${p.id}</span>
+                    <span class="text-[10px] font-black px-2 py-0.5 rounded ${p.risk>60?'bg-red-50 text-red-600':'bg-green-50 text-green-600'}">${p.risk}%</span>
                 </div>
-                <div class="text-[9px] text-slate-400 font-bold uppercase truncate">${p.diag}</div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase truncate">${p.diag}</p>
             </button>
         `).join('');
     }
 
-    function renderChart() {
-        if(chartPhys) chartPhys.destroy();
-        const ctx = document.getElementById('physChart').getContext('2d');
-        const p = profiles[activeIdx];
-        const labels = ['-10h','-8h','-6h','-4h','-2h','NOW'];
+    function switchTab(id) {
+        activeTabId = id;
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(`tab-${id}`).classList.add('active');
         
-        chartPhys = new Chart(ctx, {
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.className = "w-full flex items-center gap-4 p-4 rounded-2xl transition-all font-bold text-slate-400 hover:bg-slate-50");
+        
+        const activeBtn = document.getElementById(`nav-${id}`);
+        const theme = patients[activePatientIndex].theme === 'blue-theme' ? 'blue' : 'pink';
+        activeBtn.className = `w-full flex items-center gap-4 p-4 rounded-2xl transition-all font-bold text-${theme}-600 bg-${theme}-50 border border-${theme}-100 shadow-sm`;
+
+        if (id === 'phys') renderPhysChart();
+        if (id === 'xai') renderXAIChart();
+    }
+
+    function renderPhysChart() {
+        const ctx = document.getElementById('physTrendChart').getContext('2d');
+        if (chartInstance) chartInstance.destroy();
+        const p = patients[activePatientIndex];
+        const labels = Array.from({length: 12}, (_, i) => `${12-i}h ago`);
+        
+        chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'MBP', data: [55, 52, 49, 47, 44, p.vitals.mbp], borderColor: '#f97316', borderWidth: 4, tension: 0.2, pointRadius: 5 },
-                    { label: 'HR', data: [130, 134, 138, 140, 141, p.vitals.hr], borderColor: '#ef4444', borderWidth: 4, tension: 0.4, pointRadius: 5 },
-                    { label: 'SpO2', data: [88, 87, 85, 84, 84, p.vitals.spo2], borderColor: '#3b82f6', borderWidth: 4, tension: 0.3, pointRadius: 5 }
+                    { label: 'MBP', data: [52, 53, 51, 50, 48, 49, 47, 45, 43, 42, 42, p.vitals.mbp], borderColor: '#f97316', borderWidth: 4, tension: 0.3, pointRadius: 0 },
+                    { label: 'SpO2', data: [85, 84, 85, 86, 85, 87, 85, 84, 82, 85, 84, p.vitals.spo2], borderColor: '#3b82f6', borderWidth: 4, tension: 0.3, pointRadius: 0 },
+                    { label: 'HR', data: [135, 134, 136, 137, 138, 140, 141, 140, 142, 143, 142, p.vitals.hr], borderColor: '#ef4444', borderWidth: 4, tension: 0.4, pointRadius: 0 }
                 ]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+
+    function renderXAIChart() {
+        const ctx = document.getElementById('xaiChart').getContext('2d');
+        if (xaiInstance) xaiInstance.destroy();
+        const p = patients[activePatientIndex];
+        
+        xaiInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: p.xai.map(x => x.label),
+                datasets: [{
+                    data: p.xai.map(x => x.impact),
+                    backgroundColor: p.xai.map(x => x.type==='red' ? '#ef4444' : '#3b82f6'),
+                    borderRadius: 12
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
-                scales: { 
-                    x: { grid: { display: false }, ticks: { font: { weight: '800', size: 10 } } },
-                    y: { grid: { color: '#f1f5f9' }, ticks: { font: { weight: '600' } } }
-                }
+                scales: { x: { display: false } }
             }
         });
     }
 
-    function renderBench() {
-        const grid = document.getElementById('bench-grid');
-        const p = profiles[activeIdx];
-        grid.innerHTML = p.stats.map(s => {
-            const total = s.ref.max - s.ref.min;
-            const markerPos = ((s.val - s.ref.min) / total) * 100;
-            const medPos = ((s.ref.median - s.ref.min) / total) * 100;
-            const diff = (s.val - s.ref.median).toFixed(2);
-
-            return `
-                <div class="space-y-6">
-                    <div class="flex justify-between items-end">
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${s.name}</span>
-                        <span class="text-xs font-black ${parseFloat(diff)<0?'text-red-500':'text-blue-500'}">${diff > 0 ? '+' : ''}${diff} from Median</span>
-                    </div>
-                    <div class="relative h-2.5 bg-slate-100 rounded-full">
-                        <div class="absolute top-0 bottom-0 w-1 bg-slate-900 z-10" style="left:${medPos}%"></div>
-                        <div class="absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-blue-600 border-4 border-white shadow-xl z-20 transition-all duration-700" style="left:${markerPos}%"></div>
-                    </div>
-                    <div class="flex justify-between text-[9px] font-bold text-slate-400 uppercase">
-                        <span>Cohort Min: ${s.ref.min}</span>
-                        <span>Median: ${s.ref.median}</span>
-                        <span>Cohort Max: ${s.ref.max}</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
+    function showMetricDetail(name) {
+        document.getElementById('modalTitle').innerText = name;
+        const body = document.getElementById('modalBody');
+        const medianVal = patients[0].stats.find(s => s.name === name)?.median || 'N/A';
+        body.innerHTML = `<p>This metric represents a critical clinical variable in the shunt occlusion risk model. In our cohort of N=157 patients, the median for this feature was <strong>${medianVal}</strong>.</p><p>Deviations toward the lower or upper quartiles are statistically significant drivers of "Sudden Hypoxemia" (SH) outcomes. The model weights this feature's impact specifically for this patient's current hemodynamic status and surgical history.</p>`;
+        document.getElementById('detailModal').style.display = 'block';
     }
 
-    function showModal(title) {
-        document.getElementById('modalTitle').innerText = title;
-        document.getElementById('modalBody').innerHTML = `<p>This clinical marker is cross-referenced with the <strong>Sudden Hypoxemia (SH)</strong> outcomes from our N=157 validation study.</p><p>Deviations in this variable have been statistically mapped as high-leverage predictors in our XGBoost ensemble, with a SHAP contribution specifically calculated for this patient's current birth weight and age at surgery.</p>`;
-        document.getElementById('detailModal').style.display = 'flex';
+    function closeModal(e) {
+        if (!e || e.target.id === 'detailModal' || e.target.tagName === 'BUTTON') {
+            document.getElementById('detailModal').style.display = 'none';
+        }
     }
-
-    function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
 
     window.onload = () => setPatient(0);
 </script>
+
 </body>
 </html>
