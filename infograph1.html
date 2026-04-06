@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NICU Sudden Hypoxemia (SH) Predictive Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f9ff; scroll-behavior: smooth; }
+        .chart-container { position: relative; width: 100%; max-width: 650px; margin-left: auto; margin-right: auto; height: 320px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 380px; } }
+        .stat-card { background: white; border-radius: 1.5rem; border-top: 6px solid #0ea5e9; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
+        .gradient-bg { background: linear-gradient(135deg, #0c4a6e 0%, #075985 100%); }
+        .highlight-amber { color: #f59e0b; }
+        .icon-box { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: #e0f2fe; color: #0369a1; font-size: 24px; }
+    </style>
+</head>
+<body class="text-slate-900 antialiased">
+
+    <header class="gradient-bg text-white py-20 px-6 text-center">
+        <div class="max-w-4xl mx-auto">
+            <div class="mb-6 inline-block bg-sky-500/20 px-4 py-1 rounded-full text-sky-200 font-bold text-sm tracking-widest uppercase">Clinical Research Insight</div>
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">Predicting Sudden Hypoxemia in the NICU</h1>
+            <p class="text-xl text-sky-100 font-light max-w-2xl mx-auto leading-relaxed">A multivariate analysis of N=157 patients identifying early physiological and surgical markers for SH events.</p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-12 px-6 space-y-16">
+
+        <section id="overview">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="stat-card p-8 flex flex-col items-center text-center">
+                    <div class="icon-box mb-4">&#128101;</div>
+                    <div class="text-4xl font-black text-slate-800">157</div>
+                    <p class="text-sm font-bold text-slate-500 uppercase tracking-wide mt-2">Study Cohort Size</p>
+                    <p class="text-xs text-slate-400 mt-4 leading-relaxed">Total patients involved in the univariate and bivariate analysis of shunt occlusion risk.</p>
+                </div>
+                <div class="stat-card p-8 flex flex-col items-center text-center border-t-[#f59e0b]">
+                    <div class="icon-box mb-4 bg-amber-100 text-amber-600">&#9888;</div>
+                    <div class="text-4xl font-black text-amber-600">8.9%</div>
+                    <p class="text-sm font-bold text-slate-500 uppercase tracking-wide mt-2">SH Incidence Rate</p>
+                    <p class="text-xs text-slate-400 mt-4 leading-relaxed">14 patients reached the Sudden Hypoxemia (SH) threshold during the BTTS/Sano period.</p>
+                </div>
+                <div class="stat-card p-8 flex flex-col items-center text-center">
+                    <div class="icon-box mb-4">&#9877;</div>
+                    <div class="text-4xl font-black text-slate-800">8.3</div>
+                    <p class="text-sm font-bold text-slate-500 uppercase tracking-wide mt-2">Median Age at Surg</p>
+                    <p class="text-xs text-slate-400 mt-4 leading-relaxed">Median days post-birth for the initial surgical intervention across the cohort.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-12">
+            <div class="max-w-3xl">
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Cohort Composition & Demographics</h2>
+                <p class="text-slate-600 leading-relaxed">Before identifying predictors, we established a demographic baseline. Features such as Birth Weight, Gestational Age, and Gender were analyzed for correlation. While Gender distribution shows a male majority, statistical tests (p-values) confirm these demographics are not independent predictors of Sudden Hypoxemia.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="text-sky-500">&#9673;</span> Patient Gender Distribution
+                    </h3>
+                    <div class="chart-container flex-grow">
+                        <canvas id="genderChart"></canvas>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-8 leading-relaxed">The cohort is composed of 61.1% male and 38.9% female patients. Statistical analysis (p=0.15) suggests gender is not a significant predictor of SH.</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="text-sky-500">&#9673;</span> Prematurity & Risk
+                    </h3>
+                    <div class="chart-container flex-grow">
+                        <canvas id="prematureChart"></canvas>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-8 leading-relaxed">Only 17.2% of the cohort was categorized as premature. No significant correlation was found between prematurity and SH events (p=0.76).</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-12">
+            <div class="max-w-3xl">
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Critical Temporal Markers</h2>
+                <p class="text-slate-600 leading-relaxed">The timing of surgical intervention proved to be a pivotal factor. Patients who suffered Sudden Hypoxemia underwent surgery at a significantly lower median age (7.3 days) compared to the stable cohort (9.0 days), marking Age at Surgery as a high-leverage predictive variable.</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-12">
+                <div class="bg-white p-10 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-xl font-bold mb-8 flex items-center gap-2">
+                        <span class="text-sky-500">&#9673;</span> Median Age at Surgery Comparison
+                    </h3>
+                    <div class="chart-container !max-w-3xl">
+                        <canvas id="ageSurgChart"></canvas>
+                    </div>
+                    <div class="mt-10 p-6 bg-sky-50 rounded-xl border-l-4 border-sky-500">
+                        <p class="text-sm text-sky-900 leading-relaxed font-semibold">Takeaway: The P-value of 0.049 highlights that earlier surgical timing is a statistically relevant predictor for future Sudden Hypoxemia events.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-12">
+            <div class="max-w-3xl">
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Feature Significance Ranking</h2>
+                <p class="text-slate-600 leading-relaxed">To separate signal from noise, features were ranked by their p-values. Complications like Arrhythmia and LCOS emerged with the highest statistical significance (p=0.0001), while weight and age markers showed lower predictive power.</p>
+            </div>
+
+            <div class="bg-white p-10 rounded-2xl shadow-sm border border-slate-100">
+                <div class="chart-container !max-w-4xl h-96">
+                    <canvas id="pvalueRankChart"></canvas>
+                </div>
+                <div class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-slate-50 rounded-xl">
+                        <h4 class="font-bold text-slate-800 mb-2">High Significance Drivers</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Arrhythmia and LCOS are leading indicators. These complications are often precursors to SH, requiring proactive monitoring once diagnosed.</p>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-xl">
+                        <h4 class="font-bold text-slate-800 mb-2">Low Significance Factors</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Birth Weight and Gestational Age, while important for general care, do not statistically differentiate SH risk in this N=157 sample size.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="space-y-12">
+            <div class="max-w-3xl">
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">Temporal Complication Correlation</h2>
+                <p class="text-slate-600 leading-relaxed">A deep dive into complication timing reveals that for significant features like LCOS and Arrhythmia, the diagnosis frequently occurs BEFORE the Sudden Hypoxemia event. This window of opportunity is critical for clinical decision support.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="text-sky-500">&#9673;</span> LCOS Diagnosis Timing
+                    </h3>
+                    <div class="chart-container flex-grow">
+                        <canvas id="lcosTimingChart"></canvas>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-8 leading-relaxed">80% of LCOS cases were diagnosed BEFORE the SH event, providing a potential warning signal for clinical teams.</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="text-sky-500">&#9673;</span> Arrhythmia Diagnosis Timing
+                    </h3>
+                    <div class="chart-container flex-grow">
+                        <canvas id="arrhythmiaTimingChart"></canvas>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-8 leading-relaxed">50% of Arrhythmia cases in SH patients were documented before the hypoxemia threshold was reached.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="gradient-bg text-white py-12 px-6 text-center">
+        <p class="text-sm text-sky-300 font-bold uppercase tracking-widest mb-4">NICU Predictive Analytics Summary</p>
+        <p class="max-w-2xl mx-auto text-sky-100 text-xs leading-relaxed">This data suggests that earlier surgical age and the onset of clinical complications (Arrhythmia/LCOS) are the strongest predictors of Sudden Hypoxemia. Future predictive models should focus on temporal vital patterns following these diagnoses.</p>
+    </footer>
+
+    <script>
+        const wrapLabels = (labels) => {
+            return labels.map(label => {
+                if (label.length <= 16) return label;
+                const words = label.split(' ');
+                const lines = [];
+                let currentLine = '';
+                words.forEach(word => {
+                    if ((currentLine + word).length > 16) {
+                        lines.push(currentLine.trim());
+                        currentLine = word + ' ';
+                    } else {
+                        currentLine += word + ' ';
+                    }
+                });
+                lines.push(currentLine.trim());
+                return lines;
+            });
+        };
+
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            return Array.isArray(label) ? label.join(' ') : label;
+        };
+
+        const baseOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: tooltipTitleCallback
+                    }
+                }
+            }
+        };
+
+        const ctxGender = document.getElementById('genderChart').getContext('2d');
+        new Chart(ctxGender, {
+            type: 'doughnut',
+            data: {
+                labels: wrapLabels(['Male Patients', 'Female Patients']),
+                datasets: [{
+                    data: [61.1, 38.9],
+                    backgroundColor: ['#0ea5e9', '#38bdf8'],
+                    hoverOffset: 10,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...baseOptions,
+                cutout: '70%',
+                plugins: {
+                    ...baseOptions.plugins,
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { weight: 'bold' } } }
+                }
+            }
+        });
+
+        const ctxPremature = document.getElementById('prematureChart').getContext('2d');
+        new Chart(ctxPremature, {
+            type: 'pie',
+            data: {
+                labels: wrapLabels(['Full Term Birth', 'Premature Birth']),
+                datasets: [{
+                    data: [82.8, 17.2],
+                    backgroundColor: ['#0369a1', '#7dd3fc'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...baseOptions,
+                plugins: {
+                    ...baseOptions.plugins,
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { weight: 'bold' } } }
+                }
+            }
+        });
+
+        const ctxAgeSurg = document.getElementById('ageSurgChart').getContext('2d');
+        new Chart(ctxAgeSurg, {
+            type: 'bar',
+            data: {
+                labels: wrapLabels(['Stable Cohort', 'Sudden Hypoxemia']),
+                datasets: [{
+                    label: 'Median Days',
+                    data: [9.0, 7.3],
+                    backgroundColor: ['#e2e8f0', '#f59e0b'],
+                    borderRadius: 12
+                }]
+            },
+            options: {
+                ...baseOptions,
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    ...baseOptions.plugins,
+                    legend: { display: false }
+                }
+            }
+        });
+
+        const ctxPval = document.getElementById('pvalueRankChart').getContext('2d');
+        new Chart(ctxPval, {
+            type: 'bar',
+            data: {
+                labels: wrapLabels(['Arrhythmia Therapy', 'LCOS Diagnosis', 'Age at Surgery', 'Gender Factor', 'Birth Weight', 'Gestational Age']),
+                datasets: [{
+                    label: 'Statistical Significance (P-Value)',
+                    data: [0.0001, 0.0001, 0.049, 0.15, 0.76, 0.95],
+                    backgroundColor: ['#0ea5e9', '#0ea5e9', '#38bdf8', '#cbd5e1', '#e2e8f0', '#f1f5f9'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                ...baseOptions,
+                indexAxis: 'y',
+                scales: {
+                    x: { beginAtZero: true, max: 1.0, title: { display: true, text: 'P-Value (Lower is more significant)' } },
+                    y: { grid: { display: false } }
+                },
+                plugins: {
+                    ...baseOptions.plugins,
+                    legend: { display: false }
+                }
+            }
+        });
+
+        const ctxLcos = document.getElementById('lcosTimingChart').getContext('2d');
+        new Chart(ctxLcos, {
+            type: 'bar',
+            data: {
+                labels: wrapLabels(['LCOS Timing Distribution']),
+                datasets: [
+                    { label: 'Before SH', data: [80], backgroundColor: '#0284c7', borderRadius: 8 },
+                    { label: 'After SH', data: [20], backgroundColor: '#bae6fd', borderRadius: 8 }
+                ]
+            },
+            options: {
+                ...baseOptions,
+                indexAxis: 'y',
+                scales: { x: { stacked: true, max: 100 }, y: { stacked: true, grid: { display: false } } },
+                plugins: {
+                    ...baseOptions.plugins,
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        const ctxArr = document.getElementById('arrhythmiaTimingChart').getContext('2d');
+        new Chart(ctxArr, {
+            type: 'bar',
+            data: {
+                labels: wrapLabels(['Arrhythmia Timing Distribution']),
+                datasets: [
+                    { label: 'Before SH', data: [50], backgroundColor: '#0ea5e9', borderRadius: 8 },
+                    { label: 'After SH', data: [50], backgroundColor: '#e2e8f0', borderRadius: 8 }
+                ]
+            },
+            options: {
+                ...baseOptions,
+                indexAxis: 'y',
+                scales: { x: { stacked: true, max: 100 }, y: { stacked: true, grid: { display: false } } },
+                plugins: {
+                    ...baseOptions.plugins,
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
