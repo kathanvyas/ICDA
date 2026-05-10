@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complete Study Explainer — BTTS Synthetic Data</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0F1117;
+  --card:   #181C26;
+  --card2:  #1E2333;
+  --border: #2A3045;
+  --teal:   #00C9A7;
+  --blue:   #4A9EFF;
+  --purple: #A78BFA;
+  --gold:   #FBBF24;
+  --red:    #F87171;
+  --green:  #34D399;
+  --orange: #FB923C;
+  --text:   #E8ECF4;
+  --muted:  #7A869E;
+  --dim:    #4A526A;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); font-size:15px; line-height:1.8; }
+
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, #0A0F1E 0%, #111827 50%, #0D1F2D 100%);
+  padding: 80px 48px 72px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content:'';position:absolute;top:-120px;right:-80px;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,201,167,.06) 0%,transparent 70%);
+}
+.hero::after {
+  content:'';position:absolute;bottom:-100px;left:30%;
+  width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle,rgba(74,158,255,.04) 0%,transparent 70%);
+}
+.hero-label {
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--teal);margin-bottom:20px;
+}
+.hero h1 {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(28px,4.5vw,52px);
+  font-weight:700;line-height:1.15;
+  max-width:840px;margin-bottom:22px;
+  background:linear-gradient(135deg,#fff 40%,rgba(255,255,255,.65));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-desc { font-size:15.5px;color:var(--muted);max-width:680px;line-height:1.85;margin-bottom:48px; }
+.hero-pills { display:flex;gap:12px;flex-wrap:wrap; }
+.pill {
+  padding:6px 16px;border-radius:20px;font-size:12px;font-weight:500;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);
+}
+.pill span { color:var(--teal); }
+
+/* ─── NAV ─── */
+nav {
+  position:sticky;top:0;z-index:200;
+  background:rgba(15,17,23,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;overflow-x:auto;scrollbar-width:none;white-space:nowrap;
+}
+nav::-webkit-scrollbar{display:none}
+nav a {
+  display:inline-block;padding:14px 16px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--muted);text-decoration:none;
+  border-bottom:2px solid transparent;
+  transition:color .2s,border-color .2s;
+}
+nav a:hover { color:var(--text);border-bottom-color:var(--dim); }
+
+/* ─── LAYOUT ─── */
+.wrap { max-width:960px;margin:0 auto;padding:0 48px; }
+@media(max-width:640px){.wrap{padding:0 20px}}
+
+/* ─── SECTIONS ─── */
+section { padding:80px 0 60px;border-bottom:1px solid var(--border);scroll-margin-top:50px; }
+section:last-of-type { border-bottom:none; }
+
+.sec-label {
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;
+  letter-spacing:4px;text-transform:uppercase;color:var(--teal);margin-bottom:14px;
+}
+.sec-title {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(22px,3vw,38px);font-weight:700;
+  line-height:1.2;margin-bottom:12px;color:#fff;
+}
+.sec-intro {
+  font-size:15px;color:var(--muted);max-width:720px;
+  line-height:1.85;margin-bottom:40px;
+  border-left:2px solid var(--dim);padding-left:16px;
+}
+h3 { font-family:'Playfair Display',serif;font-size:22px;font-weight:500;color:#fff;margin:44px 0 16px; }
+h4 { font-size:14px;font-weight:600;color:var(--text);margin:24px 0 10px;text-transform:uppercase;letter-spacing:.8px; }
+p { font-size:15px;line-height:1.85;color:#BDC7DB;margin-bottom:18px; }
+p:last-child{margin-bottom:0}
+strong{color:#fff;font-weight:600;}
+em{color:var(--gold);font-style:normal;font-weight:500;}
+
+/* ─── DEFINITION (details/summary — pure HTML, no JS) ─── */
+details.def {
+  display:inline;
+}
+details.def > summary {
+  display:inline;list-style:none;cursor:pointer;
+  color:var(--blue);border-bottom:1.5px dashed rgba(74,158,255,.5);
+  padding:0 2px;border-radius:2px;font-weight:500;
+  transition:color .15s;
+}
+details.def > summary::-webkit-details-marker{display:none}
+details.def > summary::marker{display:none}
+details.def[open] > summary { color:#7DC4FF;border-bottom-color:var(--blue); }
+details.def .def-text {
+  display:block;
+  background:rgba(74,158,255,.08);
+  border-left:3px solid var(--blue);
+  border-radius:0 8px 8px 0;
+  padding:14px 18px;margin:10px 0 18px;
+  font-size:14px;color:#BDD8F5;line-height:1.78;
+}
+
+/* ─── EXPANDABLE SECTIONS ─── */
+details.block {
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;margin:16px 0;overflow:hidden;
+}
+details.block > summary {
+  padding:16px 20px;cursor:pointer;list-style:none;
+  font-weight:600;font-size:15px;color:var(--text);
+  display:flex;align-items:center;gap:10px;
+  user-select:none;
+}
+details.block > summary::-webkit-details-marker{display:none}
+details.block > summary::marker{display:none}
+details.block > summary::before { content:'▸';font-size:11px;color:var(--teal);transition:transform .2s; }
+details.block[open] > summary::before { content:'▾'; }
+details.block .block-body { padding:0 20px 20px;font-size:14.5px;color:#BDC7DB;line-height:1.8; }
+details.block .block-body p { font-size:14.5px;margin-bottom:14px; }
+
+/* ─── CARDS ─── */
+.grid2 { display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:24px 0; }
+.grid3 { display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:24px 0; }
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+.card {
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:22px;
+}
+.card-label { font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px; }
+.card-title { font-weight:600;font-size:15px;color:#fff;margin-bottom:8px; }
+.card-body  { font-size:13.5px;color:var(--muted);line-height:1.75; }
+.card.teal  { border-color:rgba(0,201,167,.3);background:rgba(0,201,167,.05); }
+.card.blue  { border-color:rgba(74,158,255,.3);background:rgba(74,158,255,.05); }
+.card.red   { border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.05); }
+.card.gold  { border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.05); }
+.card.purple{ border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.05); }
+.card.green { border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.05); }
+
+/* ─── FINDING BLOCKS ─── */
+.finding {
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:24px 26px;margin:18px 0;
+  position:relative;
+}
+.finding::before {
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:4px;border-radius:4px 0 0 4px;
+}
+.finding.red::before   { background:var(--red); }
+.finding.teal::before  { background:var(--teal); }
+.finding.blue::before  { background:var(--blue); }
+.finding.gold::before  { background:var(--gold); }
+.finding.green::before { background:var(--green); }
+.finding.purple::before{ background:var(--purple); }
+.finding-top { display:flex;align-items:center;gap:12px;margin-bottom:10px; }
+.finding-badge {
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  padding:3px 10px;border-radius:20px;font-weight:500;
+}
+.fb-red    {background:rgba(248,113,113,.15);color:var(--red);}
+.fb-teal   {background:rgba(0,201,167,.15);color:var(--teal);}
+.fb-blue   {background:rgba(74,158,255,.15);color:var(--blue);}
+.fb-gold   {background:rgba(251,191,36,.15);color:var(--gold);}
+.fb-green  {background:rgba(52,211,153,.15);color:var(--green);}
+.fb-purple {background:rgba(167,139,250,.15);color:var(--purple);}
+.finding-title { font-weight:600;font-size:15.5px;color:#fff; }
+.finding-body  { font-size:14.5px;color:#BDC7DB;line-height:1.8; }
+.finding .arrow-row {
+  display:flex;align-items:flex-start;gap:14px;
+  margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--border);
+  font-size:14px;
+}
+.arrow-icon { font-size:18px;flex-shrink:0;margin-top:1px; }
+.arrow-text { color:var(--muted);line-height:1.75; }
+.arrow-text strong { color:var(--text); }
+
+/* ─── EXAMPLE BOXES ─── */
+.example {
+  background:rgba(0,201,167,.04);border:1px solid rgba(0,201,167,.2);
+  border-radius:10px;padding:18px 22px;margin:18px 0;
+}
+.ex-label {
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;
+}
+.example p { font-size:14px;color:#B0D8CC;margin-bottom:0;line-height:1.78; }
+
+/* ─── CODE BLOCKS ─── */
+pre, code {
+  font-family:'JetBrains Mono',monospace;
+  background:rgba(0,0,0,.4);color:#C3E6FF;
+  border:1px solid var(--border);border-radius:8px;
+  font-size:13px;
+}
+pre { padding:18px 20px;overflow-x:auto;margin:18px 0;line-height:1.65; }
+code { padding:2px 6px;border-radius:4px; }
+.c-teal  { color:var(--teal); }
+.c-gold  { color:var(--gold); }
+.c-purple{ color:var(--purple); }
+.c-muted { color:var(--muted); }
+
+/* ─── STAT GRID ─── */
+.stat-row { display:flex;gap:20px;flex-wrap:wrap;margin:20px 0; }
+.stat {
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:16px 20px;min-width:120px;
+}
+.stat-num { font-family:'Playfair Display',serif;font-size:32px;font-weight:700;line-height:1;margin-bottom:4px; }
+.stat-lbl { font-size:12px;color:var(--muted); }
+
+/* ─── COMPARISON ─── */
+.vs { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0; }
+@media(max-width:600px){.vs{grid-template-columns:1fr}}
+.vs-card { border-radius:12px;padding:20px 22px; }
+.vs-card.amber { background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.25); }
+.vs-card.red   { background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.25); }
+.vs-title { font-weight:600;font-size:16px;margin-bottom:12px; }
+.vs-card.amber .vs-title { color:var(--gold); }
+.vs-card.red   .vs-title { color:var(--red); }
+.vs-item { display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;font-size:13.5px;color:var(--muted);line-height:1.65; }
+.vs-item::before { content:'·';color:inherit;flex-shrink:0;margin-top:1px; }
+.vs-card.amber .vs-item::before { color:var(--gold); }
+.vs-card.red   .vs-item::before { color:var(--red); }
+
+/* ─── BAR CHART ─── */
+.barchart { margin:20px 0; }
+.bar-row2 { display:flex;align-items:center;gap:12px;margin-bottom:10px; }
+.bl { font-size:13px;color:var(--muted);width:220px;flex-shrink:0; }
+.bt { flex:1;height:9px;background:var(--card2);border-radius:5px;overflow:hidden; }
+.bf { height:9px;border-radius:5px; }
+.bv { font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);min-width:36px;text-align:right; }
+
+/* ─── STEP LIST ─── */
+.steps { margin:24px 0; }
+.step { display:flex;gap:18px;padding:20px 0;border-bottom:1px solid var(--border);align-items:flex-start; }
+.step:last-child{border-bottom:none}
+.sn { width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:16px;font-weight:700;flex-shrink:0;margin-top:2px; }
+.sn.t{background:var(--teal);color:#000}
+.sn.b{background:var(--blue);color:#000}
+.sn.g{background:var(--gold);color:#000}
+.sn.r{background:var(--red);color:#000}
+.sn.p{background:var(--purple);color:#000}
+.st-title { font-weight:600;font-size:15.5px;color:#fff;margin-bottom:6px; }
+.st-body   { font-size:14.5px;color:#BDC7DB;line-height:1.8; }
+
+/* ─── TABLE ─── */
+table { width:100%;border-collapse:collapse;margin:20px 0;font-size:13.5px; }
+th { background:var(--card2);color:#fff;padding:11px 15px;text-align:left;font-weight:500;font-size:12px;letter-spacing:.3px; }
+td { padding:11px 15px;border-bottom:1px solid var(--border);color:#BDC7DB;vertical-align:top;line-height:1.65; }
+tr:nth-child(even) td { background:rgba(255,255,255,.02); }
+tr:last-child td { border-bottom:none; }
+.tag {display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:10px;}
+.tag-teal   {background:rgba(0,201,167,.15);color:var(--teal);}
+.tag-red    {background:rgba(248,113,113,.15);color:var(--red);}
+.tag-gold   {background:rgba(251,191,36,.15);color:var(--gold);}
+.tag-muted  {background:var(--card2);color:var(--muted);}
+.tag-blue   {background:rgba(74,158,255,.15);color:var(--blue);}
+
+/* ─── TIMELINE ─── */
+.timeline { display:flex;margin:24px 0;border-radius:10px;overflow:hidden; }
+.tl { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 10px;text-align:center;font-size:12.5px;font-weight:600; }
+.tl span{font-size:11px;font-weight:400;opacity:.75;margin-top:4px}
+
+/* ─── INSIGHT QUOTE ─── */
+.insight {
+  background:linear-gradient(135deg,rgba(0,201,167,.08),rgba(74,158,255,.05));
+  border:1px solid rgba(0,201,167,.25);border-radius:14px;
+  padding:32px 36px;margin:32px 0;
+}
+.insight-label { font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--teal);margin-bottom:12px; }
+.insight-text { font-family:'Playfair Display',serif;font-size:19px;font-style:italic;line-height:1.65;color:rgba(255,255,255,.9);max-width:800px; }
+
+/* ─── SIGNAL ROWS ─── */
+.sig-row { display:flex;gap:16px;align-items:flex-start;padding:18px 0;border-bottom:1px solid var(--border); }
+.sig-row:last-child{border-bottom:none}
+.sig-dot { width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:4px; }
+.sig-name { font-weight:600;font-size:15px;color:#fff;margin-bottom:5px; }
+.sig-body { font-size:14px;color:#BDC7DB;line-height:1.78; }
+
+/* ─── FORMULA BOX ─── */
+.formula-box {
+  background:rgba(0,0,0,.5);border:1px solid var(--border);
+  border-radius:10px;padding:22px 26px;margin:20px 0;
+  font-family:'JetBrains Mono',monospace;
+}
+.formula-title { font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:12px; }
+.formula-main { font-size:19px;color:var(--teal);margin-bottom:14px; }
+.formula-row { display:flex;gap:12px;align-items:flex-start;margin:6px 0;font-size:13px;color:var(--muted); }
+.formula-sym { color:var(--gold);min-width:80px; }
+
+/* ─── FOOTER ─── */
+footer { background:var(--card);border-top:1px solid var(--border);padding:48px 24px;text-align:center;color:var(--dim);font-size:13px;margin-top:0; }
+footer strong{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- ═══════ HERO ═══════ -->
+<div class="hero">
+  <div class="hero-label">Complete Research Explainer · Texas A&amp;M University</div>
+  <h1>What we found, how we used it, and how the synthetic data was built</h1>
+  <p class="hero-desc">A fully detailed, nothing-skipped walkthrough — from the real patient data and what two machine learning models discovered, to every single decision made when generating 100 synthetic patients with realistic ICU signals. Every medical term is explained when it first appears.</p>
+  <div class="hero-pills">
+    <div class="pill"><span>157</span> real patients</div>
+    <div class="pill"><span>14</span> SH events</div>
+    <div class="pill"><span>AUC 0.80</span> CatBoost</div>
+    <div class="pill"><span>100</span> synthetic patients</div>
+    <div class="pill"><span>51</span> signal channels</div>
+    <div class="pill"><span>433 MB</span> total data</div>
+  </div>
+</div>
+
+<!-- ═══════ NAV ═══════ -->
+<nav>
+  <a href="#s1">01 · The Patients</a>
+  <a href="#s2">02 · The Real Data</a>
+  <a href="#s3">03 · ML Findings</a>
+  <a href="#s4">04 · Signal Findings</a>
+  <a href="#s5">05 · Why Synthetic</a>
+  <a href="#s6">06 · Building DS1</a>
+  <a href="#s7">07 · Building DS2</a>
+  <a href="#s8">08 · Validation</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 1: THE PATIENTS -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="s1">
+  <div class="sec-label">Section 01</div>
+  <h2 class="sec-title">Who are these patients and what is the medical problem?</h2>
+  <p class="sec-intro">Before anything about data, models, or generation — you need to understand the clinical situation. Every decision in this study traces back to the specific physiology of these babies.</p>
+
+  <p>All 157 patients are <strong>newborn infants</strong>, most less than two weeks old, who were born with a condition called <details class="def"><summary>Single Ventricle Disease (SVD)</summary><span class="def-text"><strong>Single Ventricle Disease (SVD):</strong> A normal heart has four chambers — two upper (atria) and two lower (ventricles). The ventricles are the main pumping chambers. The right ventricle pumps blood to the lungs; the left ventricle pumps blood to the body. In SVD, one ventricle is either absent, underdeveloped, or so malformed it cannot function. This leaves the baby with one working pump trying to do two jobs. Without surgery, the condition is fatal within days to weeks.</span></details>. Because of this, oxygenated and deoxygenated blood mix inside the heart — a situation called <details class="def"><summary>intracardiac mixing</summary><span class="def-text"><strong>Intracardiac mixing:</strong> In a healthy heart, the two blood streams — oxygenated (bright red, returning from lungs) and deoxygenated (dark red, returning from body) — are kept completely separated by the heart's internal wall (septum). In SVD, both streams enter the same ventricle and mix. The result: blood pumped out to the body is only partially oxygenated. This is why SVD babies look slightly bluish (called cyanosis) and why their oxygen levels naturally run lower than in healthy children.</span></details>. Their oxygen levels are intentionally allowed to stay around 75–85%, whereas a healthy person runs at 95–100%.</p>
+
+  <p>All patients in this study had one of two major surgeries to ensure blood could reach the lungs:</p>
+
+  <div class="grid2">
+    <div class="card blue">
+      <div class="card-label" style="color:var(--blue)">Surgery Type 1 — 51% of patients</div>
+      <div class="card-title">Modified Blalock-Taussig-Thomas Shunt (mBTTS)</div>
+      <div class="card-body">A small plastic tube is surgically placed between a large artery in the body and the <details class="def"><summary>pulmonary artery</summary><span class="def-text"><strong>Pulmonary artery:</strong> The blood vessel that carries blood from the heart to the lungs. "Pulmonary" means relating to the lungs. In a normal heart, the right ventricle pumps directly into the pulmonary artery. In SVD, the malformed heart cannot route blood there properly — the shunt creates a detour.</span></details>. The tube acts as a bypass route, redirecting blood to the lungs. Available in sizes 3.0mm, 3.5mm, 4.0mm, and 5.0mm diameter. This tube — specifically whether it stays open — is the center of this entire study.</div>
+    </div>
+    <div class="card teal">
+      <div class="card-label" style="color:var(--teal)">Surgery Type 2 — 49% of patients</div>
+      <div class="card-title">Norwood Procedure</div>
+      <div class="card-body">A more complex surgery that physically reconstructs the heart's main outflow pathway. Used specifically for <details class="def"><summary>HLHS</summary><span class="def-text"><strong>Hypoplastic Left Heart Syndrome (HLHS):</strong> "Hypoplastic" = underdeveloped. The entire left side of the heart — left ventricle, mitral valve, aortic valve, and aorta — is severely underdeveloped. The left ventricle is the main pump for the body, so HLHS is one of the most critical congenital heart defects. Babies with HLHS require the Norwood procedure within the first week of life and always require <em>cardiopulmonary bypass</em> (a machine that takes over for the heart and lungs during surgery).</span></details> (29% of patients) and always requires <details class="def"><summary>cardiopulmonary bypass (CPB)</summary><span class="def-text"><strong>Cardiopulmonary bypass (CPB):</strong> A machine that completely takes over the function of the heart and lungs during surgery. The baby's blood is routed out through tubes into the machine, which oxygenates it, removes carbon dioxide, and pumps it back — keeping the baby alive while the heart is stopped. CPB allows surgeons to work on a still, bloodless heart but carries risks including inflammation, bleeding, and effects on the brain and kidneys.</span></details>.</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">The critical event</div>
+    <div class="insight-text">"Sudden hypoxemia" is what happens when the shunt tube becomes blocked — blood can no longer reach the lungs, oxygen in the blood falls rapidly, and the baby faces an immediately life-threatening emergency. This happened in 14 of 157 babies (8.9%). Predicting it 30 minutes before it becomes critical is the entire goal of this research.</div>
+  </div>
+
+  <p><details class="def"><summary>Sudden hypoxemia</summary><span class="def-text"><strong>Sudden hypoxemia:</strong> Hypoxemia = low oxygen in the blood (hypo = low; oxemia = oxygen in blood). "Sudden" distinguishes this from the chronically low-but-stable oxygen these babies normally have. A sudden drop is caused by a new acute problem — most commonly the shunt tube becoming blocked (<em>occluded</em>). The oxygen saturation (SpO2) may fall from a stable 80% to 60%, 30%, or even near 0% within minutes. Each percentage point drop represents a significant worsening of the baby's condition.</span></details> was the target variable in all machine learning models — label <code>1</code> means the event happened, <code>0</code> means it did not.</p>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 2: THE REAL DATA -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="s2">
+  <div class="sec-label">Section 02</div>
+  <h2 class="sec-title">What data existed — the two real datasets</h2>
+  <p class="sec-intro">Two completely different types of data were collected. Understanding the difference between them is essential — they serve different roles in the study.</p>
+
+  <h3>Dataset 1 — The clinical chart (all 157 patients)</h3>
+  <p>A spreadsheet with one row per patient and 41+ columns. Each column is a fact recorded at the time of surgery or during the hospital stay. Think of it as the written medical chart. It covers five main areas:</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="sn b">1</div>
+      <div>
+        <div class="st-title">Demographics and birth history</div>
+        <div class="st-body">Age at surgery (in days — this turned out to be a key predictor), weight at surgery, birth weight, <details class="def"><summary>gestational age</summary><span class="def-text"><strong>Gestational age:</strong> How many weeks of pregnancy were completed when the baby was born. Normal full-term pregnancy = 40 weeks. Babies born before 37 weeks are premature. In this cohort, the median gestational age was 38 weeks — most babies were nearly full-term. Gestational age matters because premature babies have less developed organs and may tolerate surgery differently.</span></details> in weeks, sex, race, ethnicity, and whether the baby was premature.
+        <br><br>
+        <strong>Example:</strong> Patient 5009 was born at 38 weeks (full term), weighed 3.2 kg at birth, and was operated on at 5 days of age. Age at surgery was one of the top features in both ML models.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn b">2</div>
+      <div>
+        <div class="st-title">Cardiac anatomy and surgical procedure</div>
+        <div class="st-body">The type of heart defect (one of 8 classifications using the <details class="def"><summary>NPCQIC system</summary><span class="def-text"><strong>NPCQIC:</strong> National Pediatric Cardiology Quality Improvement Collaborative. A standardized system for classifying single-ventricle heart defects used across US pediatric heart centers. Ensures that data from different hospitals can be meaningfully compared. Type 1 = HLHS, Type 2 = Unbalanced AVC, Type 3 = SV-DORV, Type 4 = SV Mitral Atresia, Type 5 = PA/IVS, Type 6 = Tricuspid Atresia, Type 7 = DILV, Type 8 = Other.</span></details>), which surgical procedure was done, the shunt diameter in mm, the <details class="def"><summary>shunt-to-weight ratio</summary><span class="def-text"><strong>Shunt-to-weight ratio:</strong> Shunt size (mm) divided by the baby's weight in kg at the time of surgery. Example: a 3.5mm shunt in a 3.3 kg baby = 3.5 ÷ 3.3 = 1.06. A smaller shunt relative to body weight means the baby's circulation is more dependent on that small tube, and any narrowing has a bigger impact. This was the 4th most important CatBoost feature.</span></details>, whether <details class="def"><summary>cardiopulmonary bypass (CPB)</summary><span class="def-text">See definition above in Section 1.</span></details> was used and for how long, whether <details class="def"><summary>cross-clamp</summary><span class="def-text"><strong>Cross-clamp (XClamp):</strong> A metal clamp placed across the aorta (the main artery leaving the heart) during surgery to temporarily stop blood flow through it. This gives the surgeon a still, bloodless field to work in. Cross-clamp time is measured in minutes (typical range: 79–109 minutes in this cohort). Longer cross-clamp times stress the heart muscle due to interrupted blood supply.</span></details> was applied, and whether <details class="def"><summary>Deep Hypothermic Circulatory Arrest (DHCA)</summary><span class="def-text"><strong>DHCA:</strong> The baby's body is deliberately cooled to ~18°C (64°F). At this temperature, the brain can survive without blood flow for up to 30–45 minutes. This allows surgeons to stop the heart-lung machine entirely for the most delicate steps. The body is then slowly rewarmed. DHCA time in this cohort averaged 8–15 minutes for those who needed it.</span></details> was used.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn b">3</div>
+      <div>
+        <div class="st-title">Comorbidities and concurrent defects</div>
+        <div class="st-body">Whether the baby had additional genetic conditions (such as <details class="def"><summary>DiGeorge syndrome</summary><span class="def-text"><strong>DiGeorge syndrome:</strong> A genetic condition caused by a missing piece of chromosome 22. Along with heart defects, it causes immune deficiency (the thymus may be absent), calcium regulation problems, and developmental effects. Babies with DiGeorge undergoing heart surgery face extra challenges.</span></details> or <details class="def"><summary>heterotaxy</summary><span class="def-text"><strong>Heterotaxy:</strong> A condition where internal organs are not in their normal left-right positions. The heart, liver, stomach, and spleen may be on the wrong side or in unusual positions. This often co-occurs with complex heart disease and significantly complicates surgery.</span></details>), and whether a condition called <details class="def"><summary>TAPVR</summary><span class="def-text"><strong>Total Anomalous Pulmonary Venous Return (TAPVR):</strong> Normally, the four veins bringing oxygenated blood from the lungs all connect to the left atrium. In TAPVR, they connect to the wrong place — often the right atrium or a systemic vein — meaning oxygenated blood goes to the wrong side of the heart. If TAPVR was repaired at the same surgery as the main heart operation (concurrent repair), the risk of sudden hypoxemia was 20× higher (odds ratio = 20.45).</span></details> was present and repaired at the same surgery.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn b">4</div>
+      <div>
+        <div class="st-title">Postoperative complications</div>
+        <div class="st-body">Events that happened after surgery, including: <details class="def"><summary>LCOS</summary><span class="def-text"><strong>Low Cardiac Output Syndrome (LCOS):</strong> After open-heart surgery, the heart is temporarily weakened and may not pump enough blood to meet the body's needs. Signs include low blood pressure, cold extremities, poor urine output, and buildup of lactic acid (a waste product that accumulates when organs don't get enough oxygen). LCOS before a sudden hypoxemia event was one of the strongest predictors, with p &lt; 0.0001.</span></details>, <details class="def"><summary>chylothorax</summary><span class="def-text"><strong>Chylothorax (ky-lo-THOR-ax):</strong> A collection of lymphatic fluid called "chyle" (milky-white fluid carrying dietary fats) in the space around the lungs. It forms when the thoracic duct (main lymph vessel in the chest) is accidentally damaged during surgery. The fluid compresses the lungs. In this study, babies with chylothorax were 12× more likely to have sudden hypoxemia (odds ratio = 12.35, p = 0.002).</span></details>, <details class="def"><summary>open sternum</summary><span class="def-text"><strong>Open sternum:</strong> After heart surgery, the chest bone (sternum) is normally sewn back together. But if the heart is too swollen to safely close the chest, the sternum is left open — covered with a sterile dressing — for several days until swelling decreases. This is a sign of surgical complexity. Open sternum was more common in SH patients (71% vs 38% non-SH).</span></details>, <details class="def"><summary>nitric oxide therapy</summary><span class="def-text"><strong>Nitric oxide therapy:</strong> A colorless gas inhaled through the breathing tube that relaxes the blood vessels in the lungs, improving blood flow through them. Used when lung blood pressure is too high after surgery (pulmonary hypertension). In this cohort, 57% of SH patients received nitric oxide vs only 19% of non-SH patients — making it a significant marker of clinical severity and the 3rd most important CatBoost feature.</span></details>, arrhythmia, sepsis, and cardiac arrest. The study also recorded whether each complication happened <em>before or after</em> the SH event.
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn b">5</div>
+      <div>
+        <div class="st-title">Outcome — the target variable</div>
+        <div class="st-body"><code>Sudden_Hypoxemia = 1</code> for the 14 patients (8.9%) who had an event; <code>0</code> for the other 143. For the 14 SH patients, the exact date and time of the event was also recorded. This timestamp was later used to determine how many days after surgery the event occurred, and to anchor the signal trajectories in Dataset 2.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Dataset 2 — The ICU monitor recordings (only 14 SH patients)</h3>
+
+  <p>A continuous time-series recording from bedside ICU monitors — 51 different measurement channels, each recorded 2 times per second (every 0.5 seconds), for the entire hospital stay. Only the 14 babies who had sudden hypoxemia had this data collected. The <strong>non-SH patients had no signal data at all</strong> — this gap is the main reason synthetic data was needed.</p>
+
+  <p>The 51 channels are grouped into 7 categories:</p>
+
+  <div class="grid2">
+    <div class="card red">
+      <div class="card-label" style="color:var(--red)">13 channels</div>
+      <div class="card-title">Arterial Blood Pressure (ABP)</div>
+      <div class="card-body">Four separate arterial lines (ABP1–ABP4), each giving <details class="def"><summary>systolic, mean, and diastolic</summary><span class="def-text"><strong>Systolic BP:</strong> The pressure at the peak of the heartbeat when the heart squeezes. <strong>Diastolic BP:</strong> The pressure when the heart relaxes between beats. <strong>Mean arterial pressure (MAP):</strong> The average pressure throughout the cardiac cycle. In newborn SVD babies: normal systolic ~65–80 mmHg, mean ~45–55 mmHg, diastolic ~30–45 mmHg. During sudden hypoxemia, systolic can fall to 30–40 mmHg and diastolic to 5–10 mmHg.</span></details> blood pressure plus the heart rate derived from the arterial waveform.</div>
+    </div>
+    <div class="card blue">
+      <div class="card-label" style="color:var(--blue)">13 channels</div>
+      <div class="card-title">ECG / Heart (HR, PVC, ST segments)</div>
+      <div class="card-body">Heart rate, <details class="def"><summary>PVCs</summary><span class="def-text"><strong>Premature Ventricular Contractions (PVCs):</strong> Extra heartbeats originating from the wrong place in the ventricles, disrupting the normal rhythm. On the ECG they appear as wide, unusual-looking beats. A few per minute is common after heart surgery; a rising PVC count can indicate cardiac stress. Higher PVC count was observed in the hours before some sudden hypoxemia events.</span></details> (extra heartbeats), and <details class="def"><summary>ST segment measurements</summary><span class="def-text"><strong>ST segment:</strong> A portion of the ECG waveform representing the period when the ventricles are fully contracted. Normally flat and at baseline. When heart muscle cells aren't getting enough oxygen (ischemia), abnormal electrical currents during this period cause the ST segment to rise or fall. The Russin et al. feature engineering pipeline computed both the average and variability of ST elevation over 5-minute windows.</span></details> across multiple ECG lead positions (AVF, AVR, V1–V6).</div>
+    </div>
+    <div class="card teal">
+      <div class="card-label" style="color:var(--teal)">5 channels</div>
+      <div class="card-title">Oxygen Saturation (SpO2 + NIRS)</div>
+      <div class="card-body"><details class="def"><summary>SpO2</summary><span class="def-text"><strong>SpO2 (peripheral oxygen saturation):</strong> The percentage of hemoglobin in the blood carrying oxygen, measured by a clip on the finger or toe. A light shines through the skin; oxygenated and deoxygenated blood absorb light differently. Normal adults: 95–100%. SVD babies: intentionally 75–85%. When the shunt blocks, SpO2 falls rapidly — this is the primary signal of a sudden hypoxemia event.</span></details> from a finger probe, plus <details class="def"><summary>NIRS</summary><span class="def-text"><strong>NIRS (Near-Infrared Spectroscopy):</strong> Sensor pads on the forehead and abdomen that use infrared light to measure oxygen levels inside the brain and organs (regional oxygen saturation = RSO2). Unlike SpO2 which measures blood in a single vessel, NIRS measures oxygen in a tissue bed — so it responds more slowly (about 5 minutes later than SpO2) but shows whether organs are actually receiving oxygen.</span></details> on 4 channels (Ch1–Ch4) measuring cerebral and somatic regional oxygen.</div>
+    </div>
+    <div class="card gold">
+      <div class="card-label" style="color:var(--gold)">4 channels</div>
+      <div class="card-title">Central Venous Pressure (CVP)</div>
+      <div class="card-body"><details class="def"><summary>CVP</summary><span class="def-text"><strong>Central venous pressure (CVP):</strong> Pressure in the large veins returning blood to the right side of the heart, measured via a catheter (thin tube) placed in a large central vein. Normal: 6–12 mmHg. A rising CVP means blood is backing up in the veins — a sign the heart is under stress or struggling to pump forward. In this study, CVP was observed to gradually rise in the hours before Type A (gradual onset) sudden hypoxemia events.</span></details> on 4 monitoring lines. A rising CVP before the event was a key feature in the Russin et al. signal pipeline.</div>
+    </div>
+    <div class="card purple">
+      <div class="card-label" style="color:var(--purple)">6 channels</div>
+      <div class="card-title">Respiration &amp; Gas Exchange</div>
+      <div class="card-body">Respiratory rate (breaths per minute — normal newborn: 30–60), CO2 going in and out (measuring how well the baby is clearing waste gas), O2 concentration in inhaled and exhaled air. Rising respiratory rate was observed in the prodromal window before events.</div>
+    </div>
+    <div class="card">
+      <div class="card-label" style="color:var(--muted)">4 + 3 channels</div>
+      <div class="card-title">Temperature &amp; Miscellaneous</div>
+      <div class="card-body">Core body temperature at 4 sites (normal: 36.5–37.5°C). Babies with <details class="def"><summary>sepsis</summary><span class="def-text"><strong>Sepsis:</strong> A life-threatening condition where infection spreads to the bloodstream. The body's immune response becomes overwhelming and damaging. Signs: fever or low temperature, rapid heart rate, low blood pressure. ~11% of this cohort developed sepsis. In the synthetic data, sepsis patients show a temperature drift of +0.6°C from day 5 onward.</span></details> show a slow temperature rise from around day 5. Also two extra pressure channels and a timestamp.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 3: ML FINDINGS -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="s3">
+  <div class="sec-label">Section 03</div>
+  <h2 class="sec-title">What the machine learning models found</h2>
+  <p class="sec-intro">Two models were trained on Dataset 1 — logistic regression and CatBoost. Each discovered something different and complementary about what predicts sudden hypoxemia.</p>
+
+  <h3>Model 1 — Logistic Regression (AUC = 0.74)</h3>
+
+  <p>Logistic regression works like a weighted checklist. Each feature gets a coefficient — a positive number means "this increases risk," a negative number means "this decreases risk." The model used <details class="def"><summary>backward stepwise elimination</summary><span class="def-text"><strong>Backward stepwise elimination:</strong> Start with all candidate features included in the model. Calculate the p-value for each. Remove the feature with the highest p-value (least statistically significant). Refit without it. Repeat until every remaining feature has p &lt; 0.05. This ensures the final model contains only features where we are at least 95% confident the relationship is real, not coincidence.</span></details> to narrow down to the most significant predictors.</p>
+
+  <p>The <details class="def"><summary>odds ratio (OR)</summary><span class="def-text"><strong>Odds ratio (OR):</strong> How much more (or less) likely an outcome is for one group vs another. OR = 1.0 = no difference. OR = 2.0 = twice as likely. OR = 12.35 = 12× more likely. OR = 0.87 per day = each additional day reduces odds by 13% (protective). OR &gt; 1 is a risk factor; OR &lt; 1 is protective.</span></details> tells us the strength of each predictor. Here is the full result:</p>
+
+  <table>
+    <tr><th>Feature</th><th>Step eliminated / kept</th><th>P-value</th><th>Odds Ratio</th><th>What it means</th></tr>
+    <tr><td><strong>Chylothorax</strong></td><td><span class="tag tag-teal">✓ Kept — Final</span></td><td>0.002</td><td>12.35</td><td>Baby with chylothorax = 12× more likely to have SH. Strongest predictor that survived elimination. Coefficient = 2.51 (positive = risk factor).</td></tr>
+    <tr><td><strong>Concurrent TAPVR Repair</strong></td><td><span class="tag tag-teal">✓ Kept — Final</span></td><td>0.020</td><td>20.45</td><td>Highest OR of any feature. Repairing TAPVR at the same surgery multiplies SH risk by over 20×. Coefficient = 3.02.</td></tr>
+    <tr><td><strong>Age at Surgery (days)</strong></td><td><span class="tag tag-teal">✓ Kept — Final</span></td><td>0.028</td><td>0.87/day</td><td>Each additional day of age reduces risk by 13%. Negative coefficient (–0.14). Younger babies = higher risk.</td></tr>
+    <tr><td><strong>Open Sternum</strong></td><td><span class="tag tag-muted">Eliminated Step 4</span></td><td>0.097</td><td>3.18</td><td>Close but just above the 0.05 threshold. With the small SH sample (N=14), it didn't reach significance in this model.</td></tr>
+    <tr><td><strong>Nitric Oxide</strong></td><td><span class="tag tag-muted">Eliminated Step 5</span></td><td>0.062</td><td>14.33</td><td>Near-significant. Wide confidence interval. CatBoost later confirms it IS a real predictor nonlinearly.</td></tr>
+    <tr><td><strong>Shunt Size &gt;3.5mm</strong></td><td><span class="tag tag-red">Eliminated p=0.999*</span></td><td>0.999</td><td>~0</td><td>*Quasi-complete separation — see explanation below.</td></tr>
+    <tr><td><strong>CPB use</strong></td><td><span class="tag tag-red">Eliminated p=0.999*</span></td><td>0.999</td><td>7.41×10⁸</td><td>*Quasi-complete separation — see explanation below.</td></tr>
+  </table>
+
+  <details class="block">
+    <summary>🔴 Important: why p=0.999 means "too strong" not "not significant"</summary>
+    <div class="block-body">
+      <p>When shunt size &gt;3.5mm and CPB were included, logistic regression produced p=0.999 — which looks like "not significant." This is actually a mathematical breakdown called <strong>quasi-complete separation</strong>.</p>
+      <p>In the real data: <strong>not a single SH patient had a shunt larger than 3.5mm.</strong> And essentially all SH patients had CPB. When one group (SH=1) has 0% or 100% of a feature and the other group doesn't, the logistic regression algorithm tries to assign an infinite weight to that feature. The math cannot compute a meaningful coefficient — it overflows. The software produces nonsensical numbers.</p>
+      <p><strong>Example:</strong> Imagine trying to guess which patients are SH just from shunt size. Every patient with a 4mm or 5mm shunt was NOT-SH (zero exceptions). Every patient with a 3.0mm or 3.5mm shunt might or might not be SH. The line between groups is so clean on the &gt;3.5mm side that the model cannot quantify "how strong" — it just knows it's infinitely strong.</p>
+      <p><strong>Correct interpretation:</strong> These features are among the most powerful predictors in the dataset. The p=0.999 is a sign of data perfection, not weakness. CatBoost handles this naturally with decision tree splits, which is why it outperforms logistic regression by 6 AUC points.</p>
+    </div>
+  </details>
+
+  <h3>Model 2 — CatBoost (AUC = 0.80, best at 6 features)</h3>
+
+  <p><details class="def"><summary>CatBoost</summary><span class="def-text"><strong>CatBoost:</strong> A gradient boosting algorithm that builds hundreds of decision trees sequentially — each tree learns from the mistakes of the ones before it. Unlike logistic regression (which can only find straight-line relationships), CatBoost finds complex nonlinear patterns and interactions between features. It handles categorical features (like shunt size class or anatomy type) particularly well. The name comes from "Categorical Boosting."</span></details> was tested with different subsets of features, from 3 up to 13. The model peaked at exactly 6 features with <details class="def"><summary>AUC = 0.7969</summary><span class="def-text"><strong>AUC (Area Under the ROC Curve):</strong> A single number measuring how well a model separates two classes. AUC = 0.5 = random guessing (coin flip). AUC = 1.0 = perfect. AUC = 0.80 means: if you randomly pick one SH patient and one non-SH patient, there is an 80% chance the model gives the SH patient a higher risk score. The improvement from 0.74 (logistic regression) to 0.80 (CatBoost) is clinically meaningful — it correctly ranks 6% more patient pairs.</span></details>. Adding more features beyond 6 actually reduced performance because they added noise.</p>
+
+  <p>The 6 features ranked by normalized feature importance (1.0 = most important):</p>
+
+  <div class="barchart">
+    <div class="bar-row2"><div class="bl">Shunt Size 3-class</div><div class="bt"><div class="bf" style="width:100%;background:var(--teal)"></div></div><div class="bv">1.00</div></div>
+    <div class="bar-row2"><div class="bl">Age at Surgery (days)</div><div class="bt"><div class="bf" style="width:75%;background:#1DB896"></div></div><div class="bv">0.75</div></div>
+    <div class="bar-row2"><div class="bl">Nitric Oxide used</div><div class="bt"><div class="bf" style="width:60%;background:#30C8A8"></div></div><div class="bv">0.60</div></div>
+    <div class="bar-row2"><div class="bl">Shunt / Weight Ratio</div><div class="bt"><div class="bf" style="width:57%;background:#45D4B8"></div></div><div class="bv">0.57</div></div>
+    <div class="bar-row2"><div class="bl">Chylothorax</div><div class="bt"><div class="bf" style="width:40%;background:#68DFC7"></div></div><div class="bv">0.40</div></div>
+    <div class="bar-row2"><div class="bl">Concurrent TAPVR Repair</div><div class="bt"><div class="bf" style="width:38%;background:#80E8D3"></div></div><div class="bv">0.38</div></div>
+  </div>
+
+  <div class="example">
+    <div class="ex-label">Example: Why CatBoost finds shunt size more powerfully than LR</div>
+    <p>CatBoost used a 3-class encoding of shunt size: class 0 (&lt;3.5mm) = high risk, class 1 (=3.5mm) = intermediate, class 2 (&gt;3.5mm) = strongly protective. A decision tree can ask "is shunt size class 2? → if yes, predict non-SH with high confidence." This nonlinear threshold rule is exactly what logistic regression cannot express — LR can only say "larger shunt = lower risk in a straight line," but the real data shows a threshold effect, not a gradient.</p>
+  </div>
+
+  <h3>What both models agree on</h3>
+
+  <div class="grid2">
+    <div class="card teal">
+      <div class="card-title">Three features both models prioritize</div>
+      <div class="card-body" style="color:var(--muted)">
+        Chylothorax, TAPVR concurrent repair, and Age at Surgery appear as significant in <em>both</em> models. This convergence across two different mathematical approaches is strong evidence these are genuine risk factors, not coincidences of the small SH sample size.
+      </div>
+    </div>
+    <div class="card gold">
+      <div class="card-title">Why CatBoost scores 6 AUC points higher</div>
+      <div class="card-body" style="color:var(--muted)">
+        Three reasons: (1) It handles quasi-complete separation naturally through tree splits. (2) It captures the nonlinear shunt size threshold. (3) It finds the interaction between nitric oxide + small shunt = very high risk, which logistic regression (which only looks at features individually) misses entirely.
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 4: SIGNAL FINDINGS -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="s4">
+  <div class="sec-label">Section 04</div>
+  <h2 class="sec-title">What the real signal recordings revealed</h2>
+  <p class="sec-intro">By examining the actual ICU monitor plots for several of the 14 SH patients in the hours around their events, five important observations shaped the signal generator design.</p>
+
+  <h3>Finding 1 — Two completely different event types exist</h3>
+
+  <p>Looking at plots for Patients 2, 3, 6, and 11, two distinct clinical pictures emerged that look almost nothing alike:</p>
+
+  <div class="vs">
+    <div class="vs-card amber">
+      <div class="vs-title">Type A — Gradual onset (40% of events)</div>
+      <div class="vs-item">Example: Patient 6. Signals begin drifting hours before the event.</div>
+      <div class="vs-item">SpO2 shows increasing variability and slow downward drift over 4–6 hours</div>
+      <div class="vs-item">Heart rate gradually climbs in what is called the <details class="def"><summary>prodromal phase</summary><span class="def-text"><strong>Prodromal phase:</strong> "Prodromal" comes from Greek meaning "running before." It describes early warning signs that precede a medical event — like the visual disturbances before a migraine. For Type A sudden hypoxemia, the prodromal phase is 2–8 hours of gradually worsening signals: SpO2 slowly drops, HR slowly rises, CVP slowly rises. These changes are subtle and may not trigger clinical alarms, but they are detectable using statistical methods.</span></details></div>
+      <div class="vs-item">CVP rises gradually in the hours before the event</div>
+      <div class="vs-item">SpO2 <details class="def"><summary>nadir</summary><span class="def-text"><strong>Nadir (NAY-deer):</strong> The lowest point reached by a measurement during an event. If SpO2 starts at 82% and falls to 58% at its worst, 58% is the nadir. The word comes from astronomy where it means the point directly below — opposite of "zenith." Used in medicine to emphasize the most dangerous moment of a deterioration episode.</span></details>: 50–65% — still dangerously low, but not near zero</div>
+      <div class="vs-item">HR peak: 165–180 bpm (baseline ~140)</div>
+      <div class="vs-item">A monitoring algorithm can detect this 30 min before it peaks</div>
+    </div>
+    <div class="vs-card red">
+      <div class="vs-title">Type B — Abrupt onset (60% of events)</div>
+      <div class="vs-item">Examples: Patients 2, 3, 11. Near-normal signals until the moment it happens.</div>
+      <div class="vs-item">SpO2 appears stable, then crashes within minutes</div>
+      <div class="vs-item">Heart rate appears normal, then either spikes to 200–250 bpm or collapses toward zero</div>
+      <div class="vs-item">Virtually no prodromal phase (less than 30 minutes of warning)</div>
+      <div class="vs-item">SpO2 nadir: 5–25% — catastrophic, near-complete oxygen loss</div>
+      <div class="vs-item">Both systolic and diastolic BP collapse at the event (systolic to 30–40 mmHg, diastolic to 5–10 mmHg)</div>
+      <div class="vs-item">Essentially undetectable 30 min before it happens</div>
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="ex-label">Real example — Patient 11 (Type B)</div>
+    <p>The signal plot for Patient 11 shows HR running steadily around 145 bpm and SpO2 around 90% for the full 4 hours before the event. Then, within approximately 10 minutes of the SH timestamp, SpO2 drops from ~90% straight down to nearly 0%, and HR spikes violently before collapsing. There is essentially no gradual warning — this is a textbook Type B (abrupt) event. A monitoring algorithm using the 30-minute pre-event window would see z-scores near zero in this patient — which is correct by design.</p>
+  </div>
+
+  <h3>Finding 2 — SpO2 baselines are higher than assumed</h3>
+
+  <p>We originally assumed SVD babies run at a mean SpO2 of 79%. The real plots showed Patients 6 and 11 had baselines of 85–95%. The reason: many of these babies are on supplemental oxygen or <details class="def"><summary>nitric oxide therapy</summary><span class="def-text">See Section 2 definition above.</span></details>, which pushes their saturation higher than the typical mixing baseline. This observation directly changed a parameter in the generator.</p>
+
+  <div class="finding teal">
+    <div class="finding-top"><span class="finding-badge fb-teal">Observation</span><div class="finding-title">SpO2 baseline too low in original generator</div></div>
+    <div class="finding-body">Original mean = 79%, σ = 2.5%. Real data shows mean closer to 82–86% in patients on oxygen support or nitric oxide.</div>
+    <div class="arrow-row"><div class="arrow-icon">→</div><div class="arrow-text"><strong>Change made:</strong> Raised SpO2 baseline to mean 82%, σ = 4.0%. Added nitric oxide modifier: patients with NitricOxide=1 get an additional +4% offset on their SpO2 baseline.</div></div>
+  </div>
+
+  <h3>Finding 3 — Most SH patients had only 1–2 days of data before their event</h3>
+
+  <p>A bar chart in the study presentation (Days Analysis slide) showed how much signal data existed before and after the SH event for all 14 patients. The observation was striking: most patients had only 1–2 days of usable pre-event data. Patient 1 had just 1.5 days. Patients 6–14 had all ≤ 2 days before their event.</p>
+
+  <div class="finding gold">
+    <div class="finding-top"><span class="finding-badge fb-gold">Observation</span><div class="finding-title">Original generator used 14 days of pre-event stable baseline — wrong</div></div>
+    <div class="finding-body">We originally generated 14+ days of stable signal before the SH event. Real data shows most SH events happen within the first 1–3 days post-surgery. A 14-day stable window before the event is unrealistic.</div>
+    <div class="arrow-row"><div class="arrow-icon">→</div><div class="arrow-text"><strong>Change made:</strong> SH patients now get 1–3 days of pre-event stable baseline (sampled from a log-normal with median ~1.8 days), the SH event, then a 5–7 day recovery phase. Total LOS for SH patients: typically 7–11 days.</div></div>
+  </div>
+
+  <h3>Finding 4 — All patients show frequent brief SpO2 dips</h3>
+
+  <p>Looking at non-SH patients' signal records, SpO2 was not a smooth flat line. It regularly dipped by 5–15 percentage points for 1–5 minutes, then recovered. These transient dips happen from repositioning the baby, <details class="def"><summary>brief apnea episodes</summary><span class="def-text"><strong>Apnea:</strong> A pause in breathing. In newborns, especially after heart surgery, brief apneic episodes (10–30 seconds) are common due to the effects of anesthesia, medication, or immature respiratory control. They cause temporary SpO2 drops that look alarming on the monitor but resolve quickly without intervention.</span></details>, probe displacement, or coughing.</p>
+
+  <div class="finding blue">
+    <div class="finding-top"><span class="finding-badge fb-blue">Observation</span><div class="finding-title">Smooth AR(1) baseline is not realistic — all real patients have transient dips</div></div>
+    <div class="finding-body">If the synthetic non-SH patient SpO2 signal is too smooth, a monitoring algorithm would learn to treat ANY downward movement as a certain SH event. Real ICU data is noisy with random brief dips.</div>
+    <div class="arrow-row"><div class="arrow-icon">→</div><div class="arrow-text"><strong>Change made:</strong> All 100 synthetic patients (SH and non-SH) now receive 3–10 randomly placed transient SpO2 dips per stay, each 5–15 percentage points deep and 1–5 minutes long. This makes the data realistic and prevents overfitting.</div></div>
+  </div>
+
+  <h3>Finding 5 — The Russin feature engineering framework defines what "detectable" means</h3>
+
+  <p>The signal data was processed using a specific approach from Craig Russin et al.: each raw signal is converted into 5-minute rolling averages, then <details class="def"><summary>z-scored</summary><span class="def-text"><strong>Z-score (Russin normalization):</strong> Measures how unusual a current value is compared to recent history. Formula: Z = (current 5-minute average − mean of previous 24 hours) ÷ standard deviation of previous 24 hours. Z = 0 means "exactly average." Z = 1.5 means "1.5 standard deviations above average — somewhat unusual." Z = 3.0 means "very unusual." By normalizing each patient against their own 24-hour baseline, the model doesn't need to know what each patient's "normal" is in absolute terms — it detects deviations from their personal norm. This is important because different SVD babies run at different baseline HR and SpO2 values.</span></details> against the previous 24 hours. A z-score ≥ 1.5 standard deviations in the 30-minute pre-event window is considered a detectable early warning. The 30-minute prediction horizon means: can the model flag this event 30 minutes before it becomes clinically obvious?</p>
+
+  <div class="finding purple">
+    <div class="finding-top"><span class="finding-badge fb-purple">Observation</span><div class="finding-title">Synthetic signals must produce z-scores ≥ 1.5 in Type A patients' 30-min pre-event window</div></div>
+    <div class="finding-body">Type A patients have a visible prodromal drift. Type B patients should NOT show z-scores above 1.5 — their events are near-undetectable. Both patterns needed to be validated in the synthetic data.</div>
+    <div class="arrow-row"><div class="arrow-icon">→</div><div class="arrow-text"><strong>Change made:</strong> Added a Russin z-score validator that automatically checks all SH patients after generation. Type A pass rate: 75% ✓. Type B pass rate: 0% ✓ (correct by design — abrupt events are clinically undetectable).</div></div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 5: WHY SYNTHETIC -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="s5">
+  <div class="sec-label">Section 05</div>
+  <h2 class="sec-title">Why synthetic data was needed</h2>
+  <p class="sec-intro">The goal of this research is to build and test a clinical dashboard. Three concrete problems make testing with real data impossible.</p>
+
+  <div class="grid3">
+    <div class="card red">
+      <div class="card-label" style="color:var(--red)">Problem 1</div>
+      <div class="card-title">Only 14 SH patients have signal data</div>
+      <div class="card-body">A human factors user study needs diverse scenarios: different anatomies, different event types, false alarms, textbook cases, subtle cases. With only 14 SH patients — and zero signal data for the other 143 — there is no material to build a meaningful 10-scenario test battery.</div>
+    </div>
+    <div class="card red">
+      <div class="card-label" style="color:var(--red)">Problem 2</div>
+      <div class="card-title">HIPAA + IRB block real patient data in testing</div>
+      <div class="card-body"><details class="def"><summary>HIPAA</summary><span class="def-text"><strong>HIPAA:</strong> The US Health Insurance Portability and Accountability Act. Protects patient health information. Showing real patient records to study participants (the clinicians being tested) requires extensive de-identification, separate consent from patients' families, and IRB approval — adding months of regulatory delay.</span></details> regulations mean real patient data cannot be shown to study participants without extensive legal processes. Synthetic data contains no real patient information and bypasses this entirely.</div>
+    </div>
+    <div class="card red">
+      <div class="card-label" style="color:var(--red)">Problem 3</div>
+      <div class="card-title">No controlled "answer key" for evaluating clinicians</div>
+      <div class="card-body">To evaluate whether a clinician correctly detected an event, you need a pre-defined correct answer. Real clinical outcomes are messy and ambiguous. Synthetic data gives you a controlled ground truth — you know exactly which patient is SH, exactly when the event occurs, and exactly what type it is.</div>
+    </div>
+  </div>
+
+  <p><strong>Validation target:</strong> A CatBoost model retrained on the synthetic data should achieve AUC within ±0.03 of the real model's AUC. Our generator achieved <em>AUC = 0.803</em> on the 6-feature model, compared to the real AUC of 0.7969 — a difference of only 0.006, well within the acceptable range.</p>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 6: BUILDING DATASET 1 -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="s6">
+  <div class="sec-label">Section 06</div>
+  <h2 class="sec-title">How Dataset 1 was built — step by step</h2>
+  <p class="sec-intro">Every design decision traces directly to a ML finding or real cohort statistic. Here is the complete process, with the reasoning behind each choice.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="sn t">1</div>
+      <div>
+        <div class="st-title">Assign the outcome label first — exactly 10 patients get SH=1</div>
+        <div class="st-body">
+          <p>This is the very first operation. Before any other feature is generated, exactly 10 of the 100 patients are randomly selected to receive <code>Sudden_Hypoxemia = 1</code>. The remaining 90 get <code>0</code>.</p>
+          <p><strong>Why first?</strong> Every other feature will be drawn from a different probability distribution depending on whether the patient is SH or not. If we assign the label after generating features, the correlations won't be right. By labeling first, each feature is generated conditional on the outcome — which matches how the real data looks.</p>
+          <p><strong>Why 10 (not 8 or 14)?</strong> The real rate was 8.9% (14 of 157). We rounded up slightly to 10% to ensure there are enough SH cases for diverse scenario selection. A rate of 10% closely mirrors the real clinical incidence.</p>
+          <div class="example">
+            <div class="ex-label">Example</div>
+            <p>After step 1, the dataset might look like: Patient 5009 = SH=1, Patient 5010 = SH=1, Patient 5042 = SH=1... and 90 others = SH=0. Every feature generated afterward will "know" which group each patient belongs to.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="sn t">2</div>
+      <div>
+        <div class="st-title">Assign SH phenotype A or B</div>
+        <div class="st-body">
+          <p>Each of the 10 SH patients is randomly assigned <code>SH_Phenotype = "A"</code> (40%) or <code>"B"</code> (60%), based on what we observed in the real signal plots. Non-SH patients get <code>"none"</code>.</p>
+          <p>This phenotype assignment is stored in the Dataset 1 spreadsheet and is later read by the signal generator to determine what kind of deterioration trajectory to inject.</p>
+          <div class="example">
+            <div class="ex-label">Example</div>
+            <p>In our generated dataset: Patient 5042 = Type A (gradual onset, detectable prodrome). Patient 5009 = Type B (abrupt onset, near-undetectable). Their signal files will look completely different around the event timestamp.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="sn t">3</div>
+      <div>
+        <div class="st-title">Shunt size — hard constraint from CatBoost rank-1 and LR quasi-separation</div>
+        <div class="st-body">
+          <p><strong>This is the single most important constraint in the entire generator.</strong> In the real data, not one SH patient had a shunt larger than 3.5mm. This produced quasi-complete separation in logistic regression and the highest importance score in CatBoost (1.0).</p>
+          <p>The code:</p>
+          <pre><span class="c-muted"># SH patients: NEVER get shunt > 3.5mm (hard rule from real data)</span>
+<span class="c-purple">def</span> _shunt(is_sh):
+    <span class="c-purple">if</span> is_sh:
+        <span class="c-purple">return</span> rng.choice([<span class="c-gold">3.0</span>, <span class="c-gold">3.5</span>], p=[<span class="c-gold">0.07</span>, <span class="c-gold">0.93</span>])
+    <span class="c-purple">else</span>:
+        <span class="c-purple">return</span> rng.choice([<span class="c-gold">3.0</span>, <span class="c-gold">3.5</span>, <span class="c-gold">4.0</span>, <span class="c-gold">5.0</span>],
+                          p=[<span class="c-gold">0.035</span>, <span class="c-gold">0.615</span>, <span class="c-gold">0.315</span>, <span class="c-gold">0.035</span>])</pre>
+          <div class="example">
+            <div class="ex-label">Example outcome</div>
+            <p>After running the generator: all 10 SH patients had shunts of 3.0mm or 3.5mm. Of the 90 non-SH patients, 28 had 4.0mm shunts and 3 had 5.0mm shunts. This is a clean, realistic separation that the CatBoost model will detect correctly.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="sn t">4</div>
+      <div>
+        <div class="st-title">Age at surgery — widened gap from the LR odds ratio of 0.87/day</div>
+        <div class="st-body">
+          <p>The logistic regression found OR = 0.87 per day, meaning each additional day of age reduces SH risk by 13%. To create a strong and detectable separation in the synthetic data, we widened the medians significantly compared to our original generator.</p>
+          <p>The values were sampled from a <details class="def"><summary>log-normal distribution</summary><span class="def-text"><strong>Log-normal distribution:</strong> Used for data that cannot be negative and is right-skewed — most values are small, but a few are large. Age at surgery fits: most babies are operated on within 2 weeks, but occasionally a baby is operated on at 40–60 days. Sampling from a log-normal ensures we never generate a baby with negative age and that the distribution has the correct shape.</span></details> to ensure no negative ages and the correct right-skewed shape:</p>
+          <pre><span class="c-muted"># SH: median ~5.5d  |  non-SH: median ~11d  (from OR=0.87/day)</span>
+age_days = np.where(
+    sh == <span class="c-gold">1</span>,
+    rng.lognormal(np.log(<span class="c-gold">5.5</span>),  <span class="c-gold">0.35</span>, n),
+    rng.lognormal(np.log(<span class="c-gold">11.0</span>), <span class="c-gold">0.45</span>, n)
+).clip(<span class="c-gold">1</span>, <span class="c-gold">65</span>).round(<span class="c-gold">1</span>)</pre>
+          <div class="example">
+            <div class="ex-label">Example outcome</div>
+            <p>In our generated dataset: SH patient median age = 5.75 days at surgery. Non-SH patient median age = 11.85 days. This closely mirrors the real cohort pattern and produces a detectable signal in the CatBoost model.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="sn t">5</div>
+      <div>
+        <div class="st-title">Complication probabilities — calibrated to LR odds ratios and CatBoost importances</div>
+        <div class="st-body">
+          <p>Each complication is assigned different probability values for SH vs non-SH patients. The values come directly from the ML results:</p>
+          <table>
+            <tr><th>Feature</th><th>SH rate</th><th>non-SH rate</th><th>Grounded in</th></tr>
+            <tr><td><strong>Chylothorax</strong></td><td><span class="tag tag-red">32%</span></td><td><span class="tag tag-muted">2%</span></td><td>LR OR=12.35, p=0.002 — widened from 29%/3% original</td></tr>
+            <tr><td><strong>Concurrent TAPVR Repair</strong></td><td><span class="tag tag-red">60% (when TAPVR present)</span></td><td><span class="tag tag-muted">1.5%</span></td><td>LR OR=20.45, p=0.020 — raised from 50% original</td></tr>
+            <tr><td><strong>Nitric Oxide</strong></td><td><span class="tag tag-red">57%</span></td><td><span class="tag tag-muted">19%</span></td><td>CatBoost rank-3, LR p=0.062 — kept from real data</td></tr>
+            <tr><td><strong>Open Sternum</strong></td><td><span class="tag tag-red">71%</span></td><td><span class="tag tag-muted">38%</span></td><td>Univariate p=0.048</td></tr>
+            <tr><td><strong>CPB use</strong></td><td><span class="tag tag-red">100% (hard)</span></td><td><span class="tag tag-muted">73%</span></td><td>LR quasi-sep — all real SH patients had CPB</td></tr>
+            <tr><td><strong>LCOS before SH</strong></td><td><span class="tag tag-red">80%</span></td><td><span class="tag tag-muted">N/A</span></td><td>Temporal constraint: p&lt;0.0001 in univariate analysis</td></tr>
+          </table>
+          <div class="example">
+            <div class="ex-label">Example: how this plays out for one patient</div>
+            <p>Patient 5042 is SH=1, Type A. The generator draws: ShuntSize = 3.5mm (from the SH probability), AgeAtSurgery = 4.2 days, NitricOxide = 1 (57% probability), OpenSternum = 1 (71% probability), CPB = 1 (forced), ConcurrentTAPVRRepair = 1 (TAPVR present and 60% repair rate). This patient looks exactly like a high-risk SVD case in the real cohort.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="sn t">6</div>
+      <div>
+        <div class="st-title">Clinical constraint checker — fixing medically impossible combinations</div>
+        <div class="st-body">
+          <p>After all features are sampled, an automatic rule-checker runs and corrects any violations. Five rules are enforced:</p>
+          <div class="grid2" style="margin:12px 0">
+            <div class="card">
+              <div class="card-title" style="font-size:13.5px">Rule 1: Norwood → CPB=1 always</div>
+              <div class="card-body">The Norwood procedure physically requires the bypass machine. If a Norwood patient somehow got CPB=0, it is corrected to CPB=1.</div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="font-size:13.5px">Rule 2: SH → CPB=1 always</div>
+              <div class="card-body">Every real SH patient had CPB. This is a hard rule — no SH patient in the synthetic data can have CPB=0.</div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="font-size:13.5px">Rule 3: CPB=0 → times all NaN</div>
+              <div class="card-body">If bypass wasn't used, then CPB time, cross-clamp time, and DHCA time must all be blank. Can't have a CPB duration when there was no CPB.</div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="font-size:13.5px">Rule 4: SH → no cardiac arrest</div>
+              <div class="card-body">In the real data, no SH patient had a cardiac arrest. If an SH patient was randomly assigned CompCardArrest=1, it is corrected to 0.</div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="font-size:13.5px">Rule 5: SH → shunt ≤ 3.5mm</div>
+              <div class="card-body">Final safety net: if any SH patient ended up with shunt &gt; 3.5mm after sampling, it is corrected to 3.5mm. (This should never happen due to Step 3, but the checker catches edge cases.)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 7: BUILDING DATASET 2 -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="s7">
+  <div class="sec-label">Section 07</div>
+  <h2 class="sec-title">How Dataset 2 was built — generating the ICU signals</h2>
+  <p class="sec-intro">Unlike Dataset 1 (one row per patient), Dataset 2 is a continuous time-series for each patient. Generating it requires both statistical methods and physiological knowledge.</p>
+
+  <h3>Step 1 — The baseline signal model: AR(1)</h3>
+
+  <p>A real physiological signal does not jump randomly between readings. If heart rate is 140 bpm right now, it will be close to 140 bpm in 2 seconds. This property — called <details class="def"><summary>autocorrelation</summary><span class="def-text"><strong>Autocorrelation:</strong> Correlation of a signal with its own past values. A coin flip has zero autocorrelation — each flip is independent. Temperature has very high autocorrelation — today's temperature is strongly related to yesterday's. ICU physiological signals have moderate to high autocorrelation: HR drifts slowly over minutes, temperature over hours. The AR(1) coefficient φ (phi) controls this: φ = 0.99 = very smooth (temperature-like), φ = 0.80 = more variable (PVC count-like).</span></details> — is modeled using an AR(1) process (first-order autoregressive model):</p>
+
+  <div class="formula-box">
+    <div class="formula-title">AR(1) — First-Order Autoregressive Model</div>
+    <div class="formula-main">X[t]  =  μ  +  φ · (X[t−1] − μ)  +  ε[t]</div>
+    <div class="formula-row"><span class="formula-sym">X[t]</span>The signal value at time t (e.g., heart rate right now)</div>
+    <div class="formula-row"><span class="formula-sym">μ (mu)</span>The long-run baseline mean (e.g., 140 bpm for HR)</div>
+    <div class="formula-row"><span class="formula-sym">φ (phi)</span>Autocorrelation: how much the current value depends on the previous one. Range: 0 to 1. Set to 0.96–0.97 for ABP and HR; 0.99 for temperature (very slow-changing).</div>
+    <div class="formula-row"><span class="formula-sym">ε[t]</span>Random noise at this timestep. Drawn from a normal distribution with standard deviation = σ × √(1−φ²)</div>
+  </div>
+
+  <div class="example">
+    <div class="ex-label">Example: generating 10 steps of HR for a patient</div>
+    <p>μ = 140 bpm, φ = 0.96, σ = 8.0. Start at 140. Step 1: add noise → 141.2. Step 2: pull back slightly toward 140, add noise → 140.8. Step 3: → 142.1. Each step is strongly influenced by the previous value (φ=0.96) but with small random perturbations. The result looks like a real HR trace: smooth drift with physiological variability.</p>
+  </div>
+
+  <p>This is computed efficiently using <code>scipy.signal.lfilter</code> which processes all N timesteps in a single vectorized operation — no Python loop needed. This keeps the full 100-patient run under 35 seconds.</p>
+
+  <h3>Step 2 — Per-patient baseline modifiers from Dataset 1</h3>
+
+  <p>Each patient's clinical chart (Dataset 1) directly shapes their signal baselines. This is the link between the two datasets:</p>
+
+  <table>
+    <tr><th>DS1 feature</th><th>Effect on signals</th><th>Physiological reason</th></tr>
+    <tr><td><strong>SurgWtKg</strong> (weight at surgery)</td><td>ABP offset: +1.5 mmHg per kg above 3.3 kg average</td><td>Heavier babies have slightly higher blood pressure — larger body mass means slightly higher vascular resistance</td></tr>
+    <tr><td><strong>HLHS anatomy</strong> (type 1)</td><td>HR baseline +5 bpm</td><td>HLHS babies often run higher heart rates due to the extra workload on the single reconstructed ventricle</td></tr>
+    <tr><td><strong>NitricOxide = 1</strong></td><td>SpO2 baseline +4%</td><td>Nitric oxide dilates lung vessels, allowing more blood to be oxygenated — this raises SpO2 in patients receiving it</td></tr>
+    <tr><td><strong>CompLCOS = 1</strong></td><td>ABP_M depressed by –8 mmHg for first 48 hours post-op</td><td>Low cardiac output means the heart isn't pumping hard enough — blood pressure drops and stays low while LCOS is active</td></tr>
+    <tr><td><strong>CompSepsis = 1</strong></td><td>Temperature signals drift +0.6°C from day 5 onward</td><td>Systemic infection raises core body temperature — the drift starts around day 5 when sepsis typically becomes clinically apparent in post-surgical patients</td></tr>
+  </table>
+
+  <div class="example">
+    <div class="ex-label">Example: two patients with different baseline signals</div>
+    <p><strong>Patient A:</strong> 4.1 kg, HLHS, NitricOxide=1. ABP offset = (4.1−3.3)×1.5 = +1.2 mmHg. HR offset = +5 bpm. SpO2 offset = +4%. Their ABP baseline = 72.2 mmHg (systolic), HR baseline = 145 bpm, SpO2 baseline = 86%.</p>
+    <p><strong>Patient B:</strong> 2.8 kg, TriAtresia, NitricOxide=0, LCOS=1. ABP offset = (2.8−3.3)×1.5 = −0.75 mmHg. Plus LCOS depression = −8 mmHg for 48h. HR offset = 0. SpO2 baseline = 82%. This patient's ABP will look notably different from Patient A's.</p>
+  </div>
+
+  <h3>Step 3 — The SH deterioration trajectories (SH patients only)</h3>
+
+  <p>For the 10 SH patients, a deterioration script is injected on top of the baseline AR(1) signal. The structure of the timeline:</p>
+
+  <div class="timeline">
+    <div class="tl" style="flex:2;background:rgba(52,211,153,.1);border-right:1px solid var(--border);color:var(--green)">Stable baseline<span>1–3 days</span></div>
+    <div class="tl" style="flex:1.2;background:rgba(251,191,36,.1);border-right:1px solid var(--border);color:var(--gold)">Prodromal drift<span>Type A: 2–8h · Type B: &lt;30 min</span></div>
+    <div class="tl" style="width:70px;flex-shrink:0;background:rgba(248,113,113,.12);border-right:1px solid var(--border);color:var(--red);font-size:11.5px">Acute event<span>~30 min</span></div>
+    <div class="tl" style="flex:3;background:rgba(74,158,255,.08);color:var(--blue)">Recovery phase<span>5–7 days</span></div>
+  </div>
+
+  <p>The delta (change) injected on each channel depends on phenotype. These are <em>additive</em> — they are added on top of the AR(1) baseline signal, so the result still looks like a physiological waveform, just drifting in the right direction:</p>
+
+  <div class="vs">
+    <div class="vs-card amber">
+      <div class="vs-title">Type A — injected changes (gradual)</div>
+      <div class="vs-item"><strong>SpO2 prodromal drop:</strong> −7 to −9 percentage points, linearly over 2–8 hours</div>
+      <div class="vs-item"><strong>SpO2 nadir:</strong> additional −18 to −24 points at the acute event (total drop from baseline: 25–33 pts)</div>
+      <div class="vs-item"><strong>HR prodromal rise:</strong> +20 to +30 bpm linearly over the prodromal window</div>
+      <div class="vs-item"><strong>HR at event:</strong> additional +30 to +40 bpm spike</div>
+      <div class="vs-item"><strong>CVP:</strong> +3 to +5 mmHg rise during prodromal window</div>
+      <div class="vs-item"><strong>Resp rate:</strong> +12 breaths/min rising through prodrome</div>
+      <div class="vs-item"><strong>PVC count:</strong> +3 to +8 extra beats/min in prodrome</div>
+      <div class="vs-item"><strong>NIRS Ch1:</strong> follows SpO2 × 0.60 with 5-min lag</div>
+      <div class="vs-item"><strong>NIRS Ch2:</strong> same but × 0.82 (slight divergence from Ch1)</div>
+    </div>
+    <div class="vs-card red">
+      <div class="vs-title">Type B — injected changes (abrupt)</div>
+      <div class="vs-item"><strong>SpO2 prodromal:</strong> only −0.5 to −2 pts (essentially flat until the event)</div>
+      <div class="vs-item"><strong>SpO2 at event:</strong> −52 to −65 pts in ~30 minutes (nadir 5–25%)</div>
+      <div class="vs-item"><strong>HR prodromal:</strong> only +3 to +10 bpm (barely noticeable above noise)</div>
+      <div class="vs-item"><strong>HR at event:</strong> spike of +55 to +85 bpm (reaching 195–225 bpm)</div>
+      <div class="vs-item"><strong>ABP systolic:</strong> falls by –38 to –52 mmHg (to 30–40 mmHg floor)</div>
+      <div class="vs-item"><strong>ABP diastolic:</strong> falls by –30 to –45 mmHg (to 5–10 mmHg floor)</div>
+      <div class="vs-item"><strong>CVP, Resp, PVC:</strong> minimal change pre-event</div>
+      <div class="vs-item"><strong>Result:</strong> z-scores near zero in 30-min pre-event window — clinically undetectable ✓</div>
+    </div>
+  </div>
+
+  <pre><span class="c-muted"># How the ramp is applied (simplified)</span>
+<span class="c-muted"># "ramp_min" creates a linear slope from v0 to v1 between minutes s and e</span>
+
+<span class="c-purple">if</span> phenotype == <span class="c-gold">"A"</span>:
+    spo2_prod_drop  = rng.uniform(<span class="c-gold">-9</span>, <span class="c-gold">-7</span>)    <span class="c-muted"># e.g. –8.2 pts over prodrome</span>
+    spo2_acute_drop = rng.uniform(<span class="c-gold">-24</span>, <span class="c-gold">-18</span>)  <span class="c-muted"># e.g. –21 pts at event</span>
+<span class="c-purple">else</span>:  <span class="c-muted"># Type B</span>
+    spo2_prod_drop  = rng.uniform(<span class="c-gold">-2</span>, <span class="c-gold">-0.5</span>)  <span class="c-muted"># e.g. –1.1 pts (flat)</span>
+    spo2_acute_drop = rng.uniform(<span class="c-gold">-65</span>, <span class="c-gold">-52</span>)  <span class="c-muted"># e.g. –58 pts (crash)</span>
+
+delta_spo2 = (
+    ramp_min(n_trend, prod_start, sh_min, <span class="c-gold">0</span>, spo2_prod_drop) +
+    ramp_min(n_trend, sh_min, acute_end, <span class="c-gold">0</span>, spo2_acute_drop)
+)
+<span class="c-muted"># Add this delta on top of the AR(1) baseline:</span>
+spo2_signal = (spo2_baseline + delta_spo2).clip(<span class="c-gold">50</span>, <span class="c-gold">100</span>)</pre>
+
+  <div class="example">
+    <div class="ex-label">Example: Patient 5042 (Type A) signal around event</div>
+    <p>SH event at day 1.7 (about 41 hours post-surgery = minute 2,460 in the trend). Prodromal window: 6 hours = minutes 2,100 to 2,460. SpO2 drops from 81% at minute 2,100 to ~73% at minute 2,460 (prodromal −8 pts over 6 hours). Then at the acute event, drops further to ~58% (additional −21 pts). HR simultaneously rises from 142 to 165 bpm during the prodrome, then spikes to 198 bpm at the event. Russin z-score check: SpO2 z = −1.85 (passes 1.5σ threshold ✓), HR z = +2.63 (passes ✓).</p>
+  </div>
+
+  <h3>Step 4 — Transient SpO2 dips for all patients</h3>
+
+  <p>After the baseline and any SH trajectory are generated, all 100 patients (SH and non-SH alike) receive random brief SpO2 dips:</p>
+
+  <pre><span class="c-purple">def</span> transient_dips(arr, n_trend, rng, lo=<span class="c-gold">50</span>):
+    n = int(rng.integers(<span class="c-gold">3</span>, <span class="c-gold">11</span>))  <span class="c-muted"># 3–10 dips per stay</span>
+    <span class="c-purple">for</span> _ <span class="c-purple">in</span> range(n):
+        start    = int(rng.integers(<span class="c-gold">60</span>, n_trend - <span class="c-gold">60</span>))
+        duration = int(rng.integers(<span class="c-gold">1</span>, <span class="c-gold">6</span>))      <span class="c-muted"># 1–5 minutes long</span>
+        magnitude = float(rng.uniform(<span class="c-gold">5</span>, <span class="c-gold">15</span>))  <span class="c-muted"># 5–15 percentage points deep</span>
+        <span class="c-muted"># Shape: ramp down then ramp back up (V shape)</span>
+        arr[start:start+duration] -= magnitude</pre>
+
+  <div class="example">
+    <div class="ex-label">Example: non-SH patient NO-03 (false alarm scenario)</div>
+    <p>This patient has no SH event. But their SpO2 signal might show: a 12-point dip at hour 18 (probe displacement during repositioning), a 7-point dip at hour 42 (brief apnea), and a 9-point dip at hour 61 (coughing). These make the signal look realistic and give the dashboard tester a false alarm to evaluate — do they correctly identify this as NOT an SH event?</p>
+  </div>
+
+  <h3>Step 5 — Tiered storage architecture (solving the file size problem)</h3>
+
+  <p>At 2 samples/second × 51 channels × 100 patients × 14–30 days = approximately 46 gigabytes uncompressed. We solved this with a two-tier approach:</p>
+
+  <div class="grid2">
+    <div class="card teal">
+      <div class="card-label" style="color:var(--teal)">Tier 1 — trend_1min</div>
+      <div class="card-title">1 sample per minute, full stay</div>
+      <div class="card-body">All 51 channels downsampled to 1 reading per minute for the entire LOS (14–30 days). Used for long-term trend viewing in the dashboard. Stored as float16 (half precision) with gzip compression. File size: ~3–5 MB per patient.</div>
+    </div>
+    <div class="card blue">
+      <div class="card-label" style="color:var(--blue)">Tier 2 — burst_2hz</div>
+      <div class="card-title">2 samples/second, ±6 hour window</div>
+      <div class="card-body">The 23 core hemodynamic channels (HR, ABP, SpO2, CVP, NBP) at full 2 Hz resolution, but only for the ±6 hour window around the SH event (or mid-stay for non-SH patients). Used for alarm analysis and event detection. This is where the "2 Hz" requirement is preserved.</div>
+    </div>
+  </div>
+
+  <p>Both tiers are stored in an <details class="def"><summary>HDF5 file</summary><span class="def-text"><strong>HDF5 (Hierarchical Data Format version 5):</strong> A binary file format designed for large scientific datasets. Think of it as a ZIP file that also acts as a database — it can store many arrays of data with names, compressed, all inside one file. Supports partial reading (read just the SpO2 channel without loading everything), compression (files 10–180× smaller than raw), and metadata storage (the patient's clinical features stored alongside the signals as "attributes"). Standard format in neuroscience, genomics, and clinical data science.</span></details> with gzip compression — one file per patient. Total: 433 MB for all 100 patients.</p>
+
+  <pre><span class="c-muted"># Reading a patient's signals in Python</span>
+<span class="c-purple">import</span> h5py, numpy as np
+
+<span class="c-purple">with</span> h5py.File(<span class="c-gold">"patient_5042.h5"</span>, <span class="c-gold">"r"</span>) <span class="c-purple">as</span> f:
+    meta    = dict(f[<span class="c-gold">"metadata"</span>].attrs)        <span class="c-muted"># clinical info + event time</span>
+    t_trend = f[<span class="c-gold">"time_trend_sec"</span>][:]           <span class="c-muted"># seconds from surgery</span>
+    hr_1min = f[<span class="c-gold">"trend_1min/PARM_HR"</span>][:]       <span class="c-muted"># HR at 1/min</span>
+    spo2    = f[<span class="c-gold">"trend_1min/PARM_SPO2_1"</span>][:]   <span class="c-muted"># SpO2 at 1/min</span>
+    t_burst = f[<span class="c-gold">"time_burst_sec"</span>][:]           <span class="c-muted"># seconds (2 Hz window)</span>
+    hr_2hz  = f[<span class="c-gold">"burst_2hz/PARM_HR"</span>][:]        <span class="c-muted"># HR at 2 Hz, ±6h window</span>
+    sh_time = meta.get(<span class="c-gold">"sh_sec"</span>)               <span class="c-muted"># seconds after surgery</span></pre>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 8: VALIDATION -->
+<!-- ═══════════════════════════════════════════════ -->
+<section id="s8">
+  <div class="sec-label">Section 08</div>
+  <h2 class="sec-title">How the output was validated</h2>
+  <p class="sec-intro">Four automated checks confirmed the synthetic data is realistic before it can be used in human factors testing.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="sn g">1</div>
+      <div>
+        <div class="st-title">Clinical constraint check — zero violations required</div>
+        <div class="st-body">After generating Dataset 1, all five clinical rules (see Section 6, Step 6) are checked automatically. Any violations are corrected and logged. In the v3 run: <em>All constraints satisfied. Zero violations.</em>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn g">2</div>
+      <div>
+        <div class="st-title">Distribution check — shunt size, age, complication rates</div>
+        <div class="st-body">Key distributions confirmed across the 100 synthetic patients:
+          <br><br>
+          <strong>Shunt size SH patients:</strong> 3.0mm = 1 patient, 3.5mm = 9 patients, 4.0mm = 0, 5.0mm = 0. ✓
+          <br><strong>Age at surgery:</strong> SH median 5.75 days, non-SH median 11.85 days. ✓
+          <br><strong>Chylothorax average across multiple seeds:</strong> 36% for SH (target 32%) ✓
+          <br><strong>CPB for SH patients:</strong> 100%. ✓
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn g">3</div>
+      <div>
+        <div class="st-title">ML validation — 5-fold cross-validated AUC on 6 features</div>
+        <div class="st-body">A gradient boosting model was retrained on <em>only the synthetic data</em> using the same 6 features as the real CatBoost model. Result: <strong>AUC = 0.803</strong>, versus the real model's AUC of 0.7969. Difference = 0.006. Well within the ±0.03 acceptable range. This confirms the synthetic distributions are realistic enough for ML purposes.
+          <div class="example">
+            <div class="ex-label">What this means in plain terms</div>
+            <p>If you train a model on the fake data and then test it on real data, it should perform similarly to a model trained on real data. Our AUC of 0.803 means the fake data has the right patterns — the separations between SH and non-SH patients in the 6 key features are at the right magnitudes and in the right directions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="sn g">4</div>
+      <div>
+        <div class="st-title">Russin z-score validation — checking signal detectability</div>
+        <div class="st-body">For each SH patient, the validator computes the z-score of HR and SpO2 in the 30 minutes before their event, compared to the previous 24 hours. Results from the v3 run:
+          <br><br>
+          <strong>Type A patients (gradual):</strong>
+          <br>Patient 5042: HR z = +2.63 (passes 1.5σ ✓), SpO2 z = −1.85 (passes ✓)
+          <br>Patient 5061: HR z = +2.03 (passes ✓), SpO2 z = −1.43 (borderline)
+          <br>
+          <br><strong>Type B patients (abrupt):</strong>
+          <br>Patient 5009: HR z = +0.51 (does not pass — correct ✓)
+          <br>Patient 5010: HR z = +0.29 (does not pass — correct ✓)
+          <br>Patient 5020: HR z = +0.12 (does not pass — correct ✓)
+          <br><br>
+          Overall: <strong>Type A pass rate = 75%</strong>, <strong>Type B pass rate = 0%</strong>. Both are the expected and correct outcomes.
+          <div class="example">
+            <div class="ex-label">Why Type B pass rate of 0% is correct — not a bug</div>
+            <p>Type B events are the abrupt, sudden-onset cases. By definition, there is no detectable prodromal drift. A monitoring algorithm that uses the 30-min window before the event will see completely normal z-scores — HR at 0.29σ, SpO2 at −0.28σ. These patients cannot be predicted 30 minutes in advance with this method. This matches what was observed in the real signal plots for Patients 2, 3, and 11. If Type B patients were showing high z-scores, it would mean the synthetic data was unrealistically easy to predict — a false validation pass.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-label">Final output summary</div>
+    <div class="insight-text">100 synthetic patients (PatIDs 5001–5100) · 10 SH (4 Type A, 6 Type B) · 90 non-SH · 42 clinical columns in Dataset 1 · 51 signal channels in Dataset 2 · 433 MB across 100 HDF5 files · 10 scenario patients selected for human factors testing · All constraints satisfied · ML AUC = 0.803 · Type A z-score detectability confirmed.</div>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<footer>
+  <strong>BTTS Shunt Occlusion Study — Synthetic Data Documentation v3</strong><br>
+  Kathan Vakharia · PhD Candidate, Computer Science · Texas A&amp;M University<br>
+  Advisors: Dr. Frank Shipman &amp; Dr. Madhav Erraguntla · Shipman &amp; Erraguntla Labs
+</footer>
+
+</body>
+</html>
